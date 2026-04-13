@@ -1,0 +1,28 @@
+/* ═══════ RESULT ═══════ */
+.res-screen { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg) }
+.res-top { position: fixed; top: 0; left: 0; right: 0; background: rgba(10,10,10,.95); backdrop-filter: blur(8px); z-index: 50; padding: 16px 32px; border-bottom: 1px solid var(--g900); display: flex; align-items: center; gap: 16px }
+.res-cols { display: flex; flex: 1; margin-top: 60px; min-height: calc(100vh - 60px) }
+.res-col { flex: 1; padding: 32px; overflow-y: auto; padding-bottom: 100px }
+.res-found { background: var(--surface) }
+.res-miss { background: var(--card) }
+.res-ct { font-family: 'Bebas Neue', cursive; font-size: 22px; color: var(--red); letter-spacing: 1.5px; margin-bottom: 24px }
+.res-sec { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--g800) }
+.res-sec:last-child { border-bottom: none }
+.res-sh { display: flex; align-items: center; gap: 8px; margin-bottom: 8px }
+.res-sn { font-family: 'Bebas Neue', cursive; font-size: 16px; color: var(--g500) }
+.res-sl { font-size: 13px; font-weight: 600; color: var(--white) }
+.res-st { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0 }
+.res-st.ok { background: #27AE60 }
+.res-st.part { background: #F1C40F }
+.res-st.no { background: var(--red) }
+.res-txt { font-size: 13px; color: var(--g400); line-height: 1.6; white-space: pre-wrap }
+.res-ft { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,.95); backdrop-filter: blur(8px); border-top: 1px solid var(--g900); padding: 16px 32px; display: flex; justify-content: center; gap: 12px; z-index: 50 }
+.res-miss-field { margin-bottom: 12px }
+.res-miss-field label { font-size: 12px; color: var(--g500); margin-bottom: 4px; display: block }
+.res-miss-field .txa { border-color: var(--red); min-height: 60px }
+
+.res-name { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 16px; background: rgba(192,57,43,.05); border: 1px solid rgba(192,57,43,.15) }
+.res-name label { font-size: 12px; color: var(--g400); white-space: nowrap }
+.res-name .inp { flex: 1; border-color: var(--red) }
+
+@media (max-width: 768px) { .res-cols { flex-direction: column } }
