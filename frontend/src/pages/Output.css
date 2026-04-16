@@ -96,9 +96,9 @@
 }
 
 .doc-inner {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 36px 40px 60px;
+  max-width: 100%;
+  margin: 0;
+  padding: 36px clamp(32px, 4vw, 56px) 60px;
 }
 
 /* ── Document header ── */
