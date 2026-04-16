@@ -1,12 +1,12 @@
 /* ═══════ LOADING ═══════ */
-.ld-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 32px; background: var(--bg) }
-.ld-t { font-family: 'Bebas Neue', cursive; font-size: 32px; color: var(--white); margin-bottom: 48px; letter-spacing: 2px }
+.ld-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 32px; background: var(--bg); transition: background var(--transition-theme) }
+.ld-t { font-family: 'Bebas Neue', cursive; font-size: 32px; color: var(--text-primary); margin-bottom: 48px; letter-spacing: 2px }
 .ld-secs { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 20px }
 .ld-i { opacity: 0; transform: translateY(10px); transition: opacity .5s, transform .5s }
 .ld-i.vis { opacity: 1; transform: translateY(0) }
-.ld-i-l { font-size: 13px; color: var(--g400); margin-bottom: 6px; display: flex; align-items: center; gap: 8px }
+.ld-i-l { font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px; display: flex; align-items: center; gap: 8px }
 .ld-i-l .n { font-family: 'Bebas Neue', cursive; font-size: 18px; color: var(--red) }
-.ld-bar { height: 2px; background: var(--g800); overflow: hidden }
+.ld-bar { height: 2px; background: var(--border-default); overflow: hidden }
 .ld-fill { height: 100%; width: 0%; background: var(--red); transition: width .6s }
 .ld-i.vis .ld-fill { width: 100% }
 .ld-cancel { margin-top: 32px; opacity: 0; animation: fadeIn 0.5s ease forwards }

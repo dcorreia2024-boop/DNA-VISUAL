@@ -3,38 +3,25 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --bg: #0A0A0A;
-  --red: #C0392B;
-  --red-h: #E74C3C;
-  --white: #FFFFFF;
-  --g100: #F0F0F0;
-  --g200: #DDD;
-  --g300: #AAA;
-  --g400: #888;
-  --g500: #555;
-  --g600: #444;
-  --g700: #333;
-  --g800: #222;
-  --g900: #1A1A1A;
-  --card: #111111;
-  --surface: #0D0D0D;
   --t: 0.2s ease;
+  --transition-theme: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html { scroll-behavior: smooth }
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
-  color: var(--g100);
+  color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background var(--transition-theme), color var(--transition-theme);
 }
 
 ::-webkit-scrollbar { width: 5px }
-::-webkit-scrollbar-track { background: var(--bg) }
-::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px }
-* { scrollbar-width: thin; scrollbar-color: var(--red) var(--bg) }
+::-webkit-scrollbar-track { background: var(--scrollbar-track) }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px }
+* { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track) }
 
 a { color: inherit; text-decoration: none }
 .bebas { font-family: 'Bebas Neue', cursive }
@@ -55,10 +42,10 @@ a { color: inherit; text-decoration: none }
   align-items: center;
   gap: 8px;
 }
-.btn-r { background: var(--red); color: var(--white) }
-.btn-r:hover { background: var(--red-h) }
-.btn-o { background: transparent; color: var(--white); border: 1px solid var(--g700) }
-.btn-o:hover { border-color: var(--g500) }
+.btn-r { background: var(--red); color: #FFFFFF }
+.btn-r:hover { background: var(--red-hover) }
+.btn-o { background: transparent; color: var(--text-primary); border: 1px solid var(--text-ghost) }
+.btn-o:hover { border-color: var(--text-muted) }
 .btn-back {
   background: none;
   border: none;
@@ -72,14 +59,14 @@ a { color: inherit; text-decoration: none }
   padding: 0;
   transition: var(--t);
 }
-.btn-back:hover { color: var(--red-h) }
+.btn-back:hover { color: var(--red-hover) }
 
 /* ── Inputs ── */
 .inp, .txa {
   width: 100%;
-  background: var(--card);
-  border: 1px solid var(--g900);
-  color: var(--white);
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
   padding: 12px 14px;
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
@@ -92,24 +79,24 @@ a { color: inherit; text-decoration: none }
   border-color: var(--red);
   box-shadow: 0 0 0 1px rgba(192, 57, 43, .2);
 }
-.inp::placeholder, .txa::placeholder { color: var(--g600) }
+.inp::placeholder, .txa::placeholder { color: var(--text-faint) }
 .txa { min-height: 80px; overflow: hidden }
 
 /* ── Glass ── */
 .glass {
-  background: rgba(255, 255, 255, .03);
-  border: 1px solid rgba(255, 255, 255, .06);
+  background: var(--border-subtle);
+  border: 1px solid var(--border-subtle);
   transition: var(--t);
 }
 .glass:hover {
   border-color: rgba(192, 57, 43, .5);
-  background: rgba(192, 57, 43, .04);
+  background: var(--red-ghost);
 }
 
 /* ── Optional tag ── */
 .opt-tag {
   display: inline-block;
-  background: rgba(192, 57, 43, .15);
+  background: var(--red-subtle);
   color: var(--red);
   font-size: 9px;
   text-transform: uppercase;
@@ -130,7 +117,7 @@ a { color: inherit; text-decoration: none }
   background: var(--red);
   font-family: 'Bebas Neue', cursive;
   font-size: 16px;
-  color: var(--white);
+  color: #FFFFFF;
   letter-spacing: 1px;
   line-height: 1;
   border-radius: 4px;
@@ -138,17 +125,17 @@ a { color: inherit; text-decoration: none }
 .v4s { width: 28px; height: 28px; font-size: 14px; border-radius: 3px }
 
 .brand { display: flex; flex-direction: column }
-.brand-n { font-size: 13px; color: var(--white); font-weight: 600; letter-spacing: .5px }
-.brand-s { font-size: 10px; color: var(--g500); letter-spacing: .3px }
+.brand-n { font-size: 13px; color: var(--text-primary); font-weight: 600; letter-spacing: .5px }
+.brand-s { font-size: 10px; color: var(--text-muted); letter-spacing: .3px }
 
 /* ── Toast ── */
 .toast {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: var(--card);
-  border: 1px solid var(--g800);
-  color: var(--g400);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-tertiary);
   padding: 10px 18px;
   font-size: 11px;
   z-index: 999;
@@ -164,5 +151,5 @@ a { color: inherit; text-decoration: none }
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #27AE60;
+  background: var(--green);
 }

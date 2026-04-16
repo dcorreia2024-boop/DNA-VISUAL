@@ -1,66 +1,73 @@
 /* ═══════ FORM ═══════ */
-.form-screen { display: flex; flex-direction: row; height: 100vh; background: var(--bg) }
+.form-screen { display: flex; flex-direction: row; height: 100vh; background: var(--bg); transition: background var(--transition-theme) }
 
-.fsb { width: 260px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--g900); display: flex; flex-direction: column; height: 100vh; position: fixed; top: 0; left: 0; z-index: 50 }
-.fsb-top { padding: 20px 20px 16px; border-bottom: 1px solid var(--g900) }
+.fsb { width: 260px; min-width: 260px; background: var(--bg-surface); border-right: 1px solid var(--border-default); display: flex; flex-direction: column; height: 100vh; position: fixed; top: 0; left: 0; z-index: 50; transition: background var(--transition-theme), border-color var(--transition-theme) }
+.fsb-top { padding: 20px 20px 16px; border-bottom: 1px solid var(--border-default) }
 .fsb-top .btn-back { margin-bottom: 16px; display: block }
 .fsb-brand { display: flex; align-items: center; gap: 10px }
 .fsb-nav { flex: 1; overflow-y: auto; padding: 12px 0 }
 
 .fnav { display: flex; align-items: center; gap: 12px; padding: 10px 20px; cursor: pointer; transition: var(--t); border-left: 3px solid transparent }
-.fnav:hover { background: rgba(192,57,43,.05) }
-.fnav.on { background: rgba(192,57,43,.08); border-left-color: var(--red) }
+.fnav:hover { background: var(--red-glow) }
+.fnav.on { background: var(--red-glow); border-left-color: var(--red) }
 .fnav.pulse { animation: pls 1s ease infinite }
 @keyframes pls { 0%,100% { border-left-color: var(--red) } 50% { border-left-color: transparent } }
 .fnav-n { font-family: 'Bebas Neue', cursive; font-size: 20px; color: var(--red); width: 20px; text-align: center; flex-shrink: 0 }
-.fnav-l { font-size: 13px; color: var(--g300); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-.fnav-d { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--g700); flex-shrink: 0; transition: var(--t) }
+.fnav-l { font-size: 13px; color: var(--text-secondary); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.fnav-d { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--text-ghost); flex-shrink: 0; transition: var(--t) }
 .fnav.partial .fnav-d { background: var(--red); border-color: var(--red); opacity: 0.4 }
 .fnav.filled .fnav-d { background: var(--red); border-color: var(--red); opacity: 1 }
 
 /* ── Sidebar block labels ── */
 .fsb-block-label { font-family: 'Bebas Neue', cursive; font-size: 11px; letter-spacing: 2px; padding: 12px 20px 4px; text-transform: uppercase }
-.fsb-block-base { color: var(--g500) }
 .fsb-block-reuniao { color: var(--red) }
-.fsb-block-divider { height: 1px; background: var(--g800); margin: 8px 20px }
 
 /* ── Novo Cliente button ── */
-.fsb-reset { margin-top: 12px; background: none; border: 1px solid var(--g800); color: var(--g500); font-family: 'DM Sans', sans-serif; font-size: 10px; padding: 6px 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; transition: var(--t) }
+.fsb-reset { margin-top: 12px; background: none; border: 1px solid var(--border-default); color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 10px; padding: 6px 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; transition: var(--t) }
 .fsb-reset:hover { border-color: var(--red); color: var(--red) }
 
-.fsb-ft { padding: 16px 20px; border-top: 1px solid var(--g900) }
-.fsb-pl { font-size: 11px; color: var(--g500); margin-bottom: 6px; display: flex; justify-content: space-between }
-.fsb-pb { height: 3px; background: var(--g800); overflow: hidden }
+.fsb-ft { padding: 16px 20px; border-top: 1px solid var(--border-default) }
+.fsb-pl { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between }
+.fsb-pb { height: 3px; background: var(--border-default); overflow: hidden }
 .fsb-pf { height: 100%; background: var(--red); transition: width .4s; width: 0% }
 
-.fmain { margin-left: 260px; flex: 1; height: 100vh; overflow-y: auto }
-.fhead { position: sticky; top: 0; background: rgba(10,10,10,.95); backdrop-filter: blur(8px); z-index: 40; padding: 20px 40px; border-bottom: 1px solid var(--g900); display: flex; gap: 20px }
+/* ── Theme toggle ── */
+.theme-toggle { margin-top: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 0 }
+.theme-toggle-track { width: 36px; height: 20px; background: var(--text-ghost); border-radius: 10px; position: relative; transition: background 0.3s }
+.theme-toggle-track.active { background: var(--red) }
+.theme-toggle-thumb { width: 16px; height: 16px; background: var(--text-primary); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.3s, background 0.3s }
+.theme-toggle-track.active .theme-toggle-thumb { transform: translateX(16px) }
+.theme-toggle-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px }
+
+.fmain { margin-left: 260px; flex: 1; height: 100vh; overflow-y: auto; transition: background var(--transition-theme) }
+.fhead { position: sticky; top: 0; background: color-mix(in srgb, var(--bg) 95%, transparent); backdrop-filter: blur(8px); z-index: 40; padding: 20px 40px; border-bottom: 1px solid var(--border-default); display: flex; gap: 20px; transition: background var(--transition-theme) }
 .fhead .fd { flex: 1; display: flex; flex-direction: column; gap: 4px }
-.fhead .fd label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--g500); font-weight: 500 }
+.fhead .fd label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 500 }
 
 .fcontent { padding: 40px 40px 120px; max-width: 800px }
 .fsec { margin-bottom: 64px; scroll-margin-top: 100px; position: relative }
-.fsec-bg { position: absolute; top: -10px; right: -20px; font-family: 'Bebas Neue', cursive; font-size: 180px; color: rgba(192,57,43,.04); line-height: 1; pointer-events: none; user-select: none }
+.fsec-bg { position: absolute; top: -10px; right: -20px; font-family: 'Bebas Neue', cursive; font-size: 180px; color: var(--red-ghost); line-height: 1; pointer-events: none; user-select: none }
 .fsec-head { position: relative; z-index: 1; margin-bottom: 28px }
-.fsec-t { font-family: 'Bebas Neue', cursive; font-size: 32px; color: var(--white); letter-spacing: 1px; line-height: 1.1 }
+.fsec-t { font-family: 'Bebas Neue', cursive; font-size: 32px; color: var(--text-primary); letter-spacing: 1px; line-height: 1.1 }
 .fsec-line { width: 40px; height: 2px; background: var(--red); margin-top: 10px }
+.section-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-style: italic }
 .ffields { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 24px }
-.ffield label { display: block; font-size: 13px; color: var(--g300); margin-bottom: 6px; line-height: 1.5 }
-
-/* ── Content block divider ── */
-.fcontent-block-divider { display: flex; align-items: center; gap: 16px; margin: 48px 0 32px; padding: 0 }
-.fcontent-block-line { flex: 1; height: 1px; background: var(--g800) }
-.fcontent-block-text { font-family: 'Bebas Neue', cursive; font-size: 14px; color: var(--red); letter-spacing: 2px; text-transform: uppercase; white-space: nowrap }
+.ffield label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.5 }
 
 /* ═══════ CLIENT DATA CARD ═══════ */
 .client-card {
   margin: 0 40px;
   padding: 20px 24px;
-  background: var(--surface);
-  border: 1px solid var(--g900);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   margin-top: 16px;
   margin-bottom: 16px;
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-card);
+}
+.client-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-hover);
 }
 
 .client-card-header {
@@ -73,21 +80,49 @@
 .client-card.open .client-card-header {
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--g800);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.client-card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .client-card-title {
   font-family: 'Bebas Neue', cursive;
   font-size: 14px;
-  color: var(--g500);
+  color: var(--text-muted);
   letter-spacing: 2px;
+  text-transform: uppercase;
+  position: relative;
+  padding-left: 14px;
+}
+.client-card-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--red);
+}
+
+.client-card-badge {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--red);
+  background: var(--red-subtle);
+  padding: 2px 8px;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .client-card-toggle {
   background: none;
-  border: 1px solid var(--g700);
-  color: var(--g400);
+  border: 1px solid var(--text-ghost);
+  color: var(--text-tertiary);
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   padding: 4px 12px;
@@ -95,13 +130,19 @@
   transition: var(--t);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .client-card-toggle:hover {
   border-color: var(--red);
   color: var(--red);
 }
+.client-card-toggle svg {
+  flex-shrink: 0;
+}
 
-/* Estado fechado — summary */
+/* Estado fechado — summary (3 colunas) */
 .client-card-summary {
   margin-top: 16px;
   display: flex;
@@ -110,12 +151,12 @@
 }
 
 .client-card-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 24px;
 }
 
 .client-card-item {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -124,7 +165,7 @@
 
 .client-card-label {
   font-size: 9px;
-  color: var(--g600);
+  color: var(--text-faint);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 500;
@@ -132,10 +173,17 @@
 
 .client-card-value {
   font-size: 13px;
-  color: var(--g300);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.client-card-value.filled {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.client-card-value.empty {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* Estado aberto — form */
@@ -160,7 +208,7 @@
 .client-card-field label {
   display: block;
   font-size: 10px;
-  color: var(--g500);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -172,18 +220,23 @@
   padding: 8px 12px;
 }
 
-.ffoot { position: fixed; bottom: 0; left: 260px; right: 0; background: rgba(10,10,10,.95); backdrop-filter: blur(8px); border-top: 1px solid var(--g900); padding: 16px 40px; z-index: 40; display: flex }
+/* ── Content block divider ── */
+.fcontent-block-divider { display: flex; align-items: center; gap: 16px; margin: 48px 0 32px; padding: 0 }
+.fcontent-block-line { flex: 1; height: 1px; background: var(--border-default) }
+.fcontent-block-text { font-family: 'Bebas Neue', cursive; font-size: 14px; color: var(--red); letter-spacing: 2px; text-transform: uppercase; white-space: nowrap }
+
+.ffoot { position: fixed; bottom: 0; left: 260px; right: 0; background: color-mix(in srgb, var(--bg) 95%, transparent); backdrop-filter: blur(8px); border-top: 1px solid var(--border-default); padding: 16px 40px; z-index: 40; display: flex; transition: background var(--transition-theme) }
 .ffoot .btn { flex: 1; justify-content: center; padding: 16px; font-size: 14px }
 
 /* ── Mobile nav ── */
-.mnav { display: none; position: sticky; top: 0; z-index: 41; background: rgba(10,10,10,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--g900); padding: 8px 16px; overflow-x: auto; gap: 6px; -webkit-overflow-scrolling: touch }
+.mnav { display: none; position: sticky; top: 0; z-index: 41; background: color-mix(in srgb, var(--bg) 95%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-default); padding: 8px 16px; overflow-x: auto; gap: 6px; -webkit-overflow-scrolling: touch }
 .mnav::-webkit-scrollbar { display: none }
-.mnav-i { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', cursive; font-size: 16px; color: var(--g500); border: 1px solid var(--g800); cursor: pointer; transition: var(--t) }
+.mnav-i { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', cursive; font-size: 16px; color: var(--text-muted); border: 1px solid var(--border-default); cursor: pointer; transition: var(--t) }
 .mnav-i.on { color: var(--red); border-color: var(--red) }
 .mnav-i.partial { color: var(--red); border-color: var(--red); opacity: 0.5 }
-.mnav-i.filled { background: var(--red); color: var(--white); border-color: var(--red) }
-.mprog { flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 11px; color: var(--g500); padding-left: 12px }
-.mprog-b { width: 60px; height: 3px; background: var(--g800); overflow: hidden; border-radius: 2px }
+.mnav-i.filled { background: var(--red); color: #FFFFFF; border-color: var(--red) }
+.mprog { flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 11px; color: var(--text-muted); padding-left: 12px }
+.mprog-b { width: 60px; height: 3px; background: var(--border-default); overflow: hidden; border-radius: 2px }
 .mprog-f { height: 100%; background: var(--red); transition: width 0.4s }
 
 @media (max-width: 768px) {
@@ -203,7 +256,7 @@
     grid-template-columns: 1fr;
   }
   .client-card-row {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 8px;
   }
 }

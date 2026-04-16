@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
+import { useTheme } from '../context/ThemeContext';
 import { useAutoResize } from '../hooks/useAutoResize';
 import SECTIONS from '../data/sections';
 import './Form.css';
@@ -8,6 +9,7 @@ import './Form.css';
 export default function Form() {
   const navigate = useNavigate();
   const { formData, updateField, resetForm } = useForm();
+  const { theme, toggleTheme } = useTheme();
   const autoResize = useAutoResize();
   const mainRef = useRef(null);
   const [activeSection, setActiveSection] = useState('business');
@@ -97,6 +99,9 @@ export default function Form() {
 
   const pct = getProgress();
 
+  // Card summary: check if any base field has value
+  const baseHasData = baseSection.fields.some(f => (formData[f.key] || '').trim());
+
   return (
     <div className="form-screen">
       <aside className="fsb">
@@ -130,6 +135,14 @@ export default function Form() {
           <button className="fsb-reset" onClick={() => {
             if (confirm('Limpar todos os dados e come\u00e7ar um novo cliente?')) resetForm();
           }}>Novo Cliente</button>
+          <div className="theme-toggle" onClick={toggleTheme}>
+            <div className={`theme-toggle-track ${theme === 'light' ? 'active' : ''}`}>
+              <div className="theme-toggle-thumb" />
+            </div>
+            <span className="theme-toggle-label">
+              {theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+            </span>
+          </div>
         </div>
       </aside>
 
@@ -172,20 +185,26 @@ export default function Form() {
           </div>
         </div>
 
-        {/* Card de Dados Base - sempre visivel entre header e perguntas */}
+        {/* Card de Dados Base */}
         <div className={`client-card ${cardOpen ? 'open' : ''}`}>
           <div className="client-card-header">
-            <span className="client-card-title">DADOS DO CLIENTE</span>
+            <div className="client-card-title-wrap">
+              <span className="client-card-title">DADOS DO CLIENTE</span>
+              <span className="client-card-badge">IA PESQUISA</span>
+            </div>
             <button
               className="client-card-toggle"
               onClick={() => setCardOpen(!cardOpen)}
             >
-              {cardOpen ? '\u2713 Salvar' : '\u270E Editar'}
+              {cardOpen ? (
+                <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> Salvar</>
+              ) : (
+                <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</>
+              )}
             </button>
           </div>
 
           {cardOpen ? (
-            /* Estado ABERTO — inputs editaveis */
             <div className="client-card-form">
               <div className="client-card-grid-2">
                 {baseSection.fields.slice(0, 6).map((f) => (
@@ -217,50 +236,47 @@ export default function Form() {
               </div>
             </div>
           ) : (
-            /* Estado FECHADO — dados resumidos */
             <div className="client-card-summary">
               <div className="client-card-row">
                 <div className="client-card-item">
                   <span className="client-card-label">Empresa</span>
-                  <span className="client-card-value">{formData.clientCompany || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.clientCompany ? 'filled' : 'empty'}`}>{formData.clientCompany || '\u2014'}</span>
                 </div>
                 <div className="client-card-item">
                   <span className="client-card-label">Nicho</span>
-                  <span className="client-card-value">{formData.clientNiche || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.clientNiche ? 'filled' : 'empty'}`}>{formData.clientNiche || '\u2014'}</span>
                 </div>
-              </div>
-              <div className="client-card-row">
                 <div className="client-card-item">
                   <span className="client-card-label">Cidade</span>
-                  <span className="client-card-value">{formData.clientCity || '\u2014'}</span>
-                </div>
-                <div className="client-card-item">
-                  <span className="client-card-label">Site</span>
-                  <span className="client-card-value">{formData.clientWebsite || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.clientCity ? 'filled' : 'empty'}`}>{formData.clientCity || '\u2014'}</span>
                 </div>
               </div>
               <div className="client-card-row">
                 <div className="client-card-item">
+                  <span className="client-card-label">Site</span>
+                  <span className={`client-card-value ${formData.clientWebsite ? 'filled' : 'empty'}`}>{formData.clientWebsite || '\u2014'}</span>
+                </div>
+                <div className="client-card-item">
                   <span className="client-card-label">Instagram</span>
-                  <span className="client-card-value">{formData.clientInstagram || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.clientInstagram ? 'filled' : 'empty'}`}>{formData.clientInstagram || '\u2014'}</span>
                 </div>
                 <div className="client-card-item">
                   <span className="client-card-label">Redes</span>
-                  <span className="client-card-value">{formData.clientOtherSocial || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.clientOtherSocial ? 'filled' : 'empty'}`}>{formData.clientOtherSocial || '\u2014'}</span>
                 </div>
               </div>
               <div className="client-card-row">
                 <div className="client-card-item">
                   <span className="client-card-label">Concorrente 1</span>
-                  <span className="client-card-value">{formData.competitor1 || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.competitor1 ? 'filled' : 'empty'}`}>{formData.competitor1 || '\u2014'}</span>
                 </div>
                 <div className="client-card-item">
                   <span className="client-card-label">Concorrente 2</span>
-                  <span className="client-card-value">{formData.competitor2 || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.competitor2 ? 'filled' : 'empty'}`}>{formData.competitor2 || '\u2014'}</span>
                 </div>
                 <div className="client-card-item">
                   <span className="client-card-label">Concorrente 3</span>
-                  <span className="client-card-value">{formData.competitor3 || '\u2014'}</span>
+                  <span className={`client-card-value ${formData.competitor3 ? 'filled' : 'empty'}`}>{formData.competitor3 || '\u2014'}</span>
                 </div>
               </div>
             </div>
@@ -275,6 +291,9 @@ export default function Form() {
                 <div className="fsec-head">
                   <div className="fsec-t">{sec.num}. {sec.title.toUpperCase()}</div>
                   <div className="fsec-line" />
+                  {!sec.required && (
+                    <div className="section-subtitle">Se&ccedil;&atilde;o opcional &mdash; preencha se tiver a informa&ccedil;&atilde;o</div>
+                  )}
                 </div>
                 <div className="ffields">
                   {sec.fields.map((f) => (

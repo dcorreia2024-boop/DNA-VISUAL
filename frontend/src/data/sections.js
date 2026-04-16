@@ -29,7 +29,7 @@ const SECTIONS = [
   // BLOCO 2 — REUNIAO COM O CLIENTE
   {
     id: 'business',
-    num: '2',
+    num: '1',
     title: 'O Neg\u00f3cio e o P\u00fablico',
     required: true,
     block: 'reuniao',
@@ -42,7 +42,7 @@ const SECTIONS = [
   },
   {
     id: 'personality',
-    num: '3',
+    num: '2',
     title: 'Personalidade da Marca',
     required: true,
     block: 'reuniao',
@@ -55,7 +55,7 @@ const SECTIONS = [
   },
   {
     id: 'visual',
-    num: '4',
+    num: '3',
     title: 'Identidade Visual e Estilo',
     required: true,
     block: 'reuniao',
@@ -67,7 +67,7 @@ const SECTIONS = [
   },
   {
     id: 'materials',
-    num: '5',
+    num: '4',
     title: 'Materiais e Hist\u00f3rico',
     required: true,
     block: 'reuniao',
@@ -79,7 +79,7 @@ const SECTIONS = [
   },
   {
     id: 'communication',
-    num: '6',
+    num: '5',
     title: 'Tom de Comunica\u00e7\u00e3o',
     required: false,
     block: 'reuniao',
@@ -89,7 +89,7 @@ const SECTIONS = [
   },
   {
     id: 'freeNotes',
-    num: '7',
+    num: '6',
     title: 'Observa\u00e7\u00f5es Livres',
     required: false,
     block: 'reuniao',

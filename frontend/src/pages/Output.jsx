@@ -8,7 +8,7 @@ import './Output.css';
 export default function Output() {
   const navigate = useNavigate();
   const { formData } = useForm();
-  const [copyLabel, setCopyLabel] = useState('COPIAR TUDO');
+  const [copyLabel, setCopyLabel] = useState('COPIAR TEXTO SIMPLES');
   const [claudeLabel, setClaudeLabel] = useState('COPIAR PARA O CLAUDE');
 
   const clientName = formData.clientName || 'Cliente';
@@ -18,7 +18,7 @@ export default function Output() {
   const handleCopy = async () => {
     await copyToClipboard(formatDossieText(formData));
     setCopyLabel('COPIADO!');
-    setTimeout(() => setCopyLabel('COPIAR TUDO'), 2000);
+    setTimeout(() => setCopyLabel('COPIAR TEXTO SIMPLES'), 2000);
   };
 
   const handleCopyForClaude = async () => {
@@ -60,8 +60,8 @@ export default function Output() {
 
       <div className="out-ft">
         <button className="btn btn-o" onClick={() => navigate('/form')}>VOLTAR E EDITAR</button>
-        <button className="btn btn-r" onClick={handleCopy}>{copyLabel}</button>
-        <button className="btn btn-claude" onClick={handleCopyForClaude}>{claudeLabel}</button>
+        <button className="btn btn-r btn-main" onClick={handleCopyForClaude}>{claudeLabel}</button>
+        <button className="btn btn-o btn-sm" onClick={handleCopy}>{copyLabel}</button>
       </div>
     </div>
   );
