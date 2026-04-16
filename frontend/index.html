@@ -8,6 +8,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <script>
+      // Aplica tema ANTES do primeiro paint para evitar flash branco
+      (function() {
+        var t = localStorage.getItem('dna_visual_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+    <style>
+      /* Background imediato enquanto React carrega */
+      html[data-theme="dark"] { background: #0A0A0A; }
+      html[data-theme="light"] { background: #F5F5F0; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
