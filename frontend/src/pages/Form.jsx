@@ -10,8 +10,12 @@ export default function Form() {
   const { formData, updateField, resetForm } = useForm();
   const autoResize = useAutoResize();
   const mainRef = useRef(null);
-  const [activeSection, setActiveSection] = useState('base');
+  const [activeSection, setActiveSection] = useState('business');
   const [pulseSections, setPulseSections] = useState([]);
+  const [cardOpen, setCardOpen] = useState(false);
+
+  const baseSection = SECTIONS.find(s => s.block === 'dados-base');
+  const reuniaoSections = SECTIONS.filter(s => s.block === 'reuniao');
 
   const getSectionState = useCallback((sec) => {
     const filled = sec.fields.filter(f => (formData[f.key] || '').trim()).length;
@@ -39,7 +43,7 @@ export default function Form() {
     main.scrollTop = top;
   }, []);
 
-  // Scroll spy
+  // Scroll spy — only reuniao sections
   useEffect(() => {
     const main = mainRef.current;
     if (!main) return;
@@ -51,7 +55,7 @@ export default function Form() {
       },
       { root: main, rootMargin: '-20% 0px -60% 0px' }
     );
-    SECTIONS.forEach((s) => {
+    reuniaoSections.forEach((s) => {
       const el = document.getElementById(s.id);
       if (el) observer.observe(el);
     });
@@ -63,9 +67,10 @@ export default function Form() {
     if (!clientName) { alert('Preencha o nome do cliente.'); return; }
 
     const clientCompany = (formData.clientCompany || '').trim();
-    if (!clientCompany) { alert('Preencha o nome da empresa nos Dados Base.'); navTo('base'); return; }
+    if (!clientCompany) { alert('Preencha o nome da empresa nos Dados do Cliente.'); setCardOpen(true); return; }
 
-    const missing = SECTIONS.filter(s => s.required && !s.fields.some(f => (formData[f.key] || '').trim()));
+    const requiredReuniao = reuniaoSections.filter(s => s.required);
+    const missing = requiredReuniao.filter(s => !s.fields.some(f => (formData[f.key] || '').trim()));
     if (missing.length > 0) {
       setPulseSections(missing.map(s => s.id));
       navTo(missing[0].id);
@@ -73,7 +78,7 @@ export default function Form() {
       return;
     }
 
-    const partial = SECTIONS.filter(s => s.required).filter(s => {
+    const partial = requiredReuniao.filter(s => {
       const filled = s.fields.filter(f => (formData[f.key] || '').trim()).length;
       return filled > 0 && filled < s.fields.length;
     });
@@ -92,9 +97,6 @@ export default function Form() {
 
   const pct = getProgress();
 
-  const baseSections = SECTIONS.filter(s => s.block === 'dados-base');
-  const reuniaoSections = SECTIONS.filter(s => s.block === 'reuniao');
-
   return (
     <div className="form-screen">
       <aside className="fsb">
@@ -109,21 +111,6 @@ export default function Form() {
           </div>
         </div>
         <nav className="fsb-nav">
-          <div className="fsb-block-label fsb-block-base">DADOS BASE</div>
-          {baseSections.map((s) => (
-            <div
-              key={s.id}
-              className={`fnav${activeSection === s.id ? ' on' : ''} ${getSectionState(s)}${pulseSections.includes(s.id) ? ' pulse' : ''}`}
-              onClick={() => navTo(s.id)}
-            >
-              <span className="fnav-n">{s.num}</span>
-              <span className="fnav-l">{s.title}</span>
-              <span className="fnav-d" />
-            </div>
-          ))}
-
-          <div className="fsb-block-divider" />
-
           <div className="fsb-block-label fsb-block-reuniao">REUNI&Atilde;O COM O CLIENTE</div>
           {reuniaoSections.map((s) => (
             <div
@@ -149,7 +136,7 @@ export default function Form() {
       <div className="fmain" ref={mainRef}>
         {/* Mobile nav */}
         <div className="mnav">
-          {SECTIONS.map(s => (
+          {reuniaoSections.map(s => (
             <div
               key={s.id}
               className={`mnav-i${activeSection === s.id ? ' on' : ''} ${getSectionState(s)}`}
@@ -185,56 +172,140 @@ export default function Form() {
           </div>
         </div>
 
-        <div className="fcontent">
-          {SECTIONS.map((sec, idx) => {
-            const prevSec = idx > 0 ? SECTIONS[idx - 1] : null;
-            const showDivider = sec.block === 'reuniao' && prevSec && prevSec.block === 'dados-base';
-            return (
-              <div key={sec.id}>
-                {showDivider && (
-                  <div className="fcontent-block-divider">
-                    <div className="fcontent-block-line" />
-                    <span className="fcontent-block-text">Reuni&atilde;o com o Cliente</span>
-                    <div className="fcontent-block-line" />
+        {/* Card de Dados Base - sempre visivel entre header e perguntas */}
+        <div className={`client-card ${cardOpen ? 'open' : ''}`}>
+          <div className="client-card-header">
+            <span className="client-card-title">DADOS DO CLIENTE</span>
+            <button
+              className="client-card-toggle"
+              onClick={() => setCardOpen(!cardOpen)}
+            >
+              {cardOpen ? '\u2713 Salvar' : '\u270E Editar'}
+            </button>
+          </div>
+
+          {cardOpen ? (
+            /* Estado ABERTO — inputs editaveis */
+            <div className="client-card-form">
+              <div className="client-card-grid-2">
+                {baseSection.fields.slice(0, 6).map((f) => (
+                  <div className="client-card-field" key={f.key}>
+                    <label>{f.label.split('(')[0].trim()}</label>
+                    <input
+                      className="inp"
+                      type="text"
+                      value={formData[f.key] || ''}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                      placeholder={f.placeholder || 'Digite aqui...'}
+                    />
                   </div>
-                )}
-                <div className="fsec" id={sec.id}>
-                  {sec.block === 'reuniao' && <div className="fsec-bg">{sec.num}</div>}
-                  <div className="fsec-head">
-                    <div className="fsec-t">{sec.num}. {sec.title.toUpperCase()}</div>
-                    <div className="fsec-line" />
+                ))}
+              </div>
+              <div className="client-card-grid-3">
+                {baseSection.fields.slice(6, 9).map((f) => (
+                  <div className="client-card-field" key={f.key}>
+                    <label>{f.label.split('\u2014')[0].trim()}</label>
+                    <input
+                      className="inp"
+                      type="text"
+                      value={formData[f.key] || ''}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                      placeholder="Nome + @ ou site"
+                    />
                   </div>
-                  <div className="ffields">
-                    {sec.fields.map((f) => (
-                      <div className="ffield" key={f.key}>
-                        <label>
-                          {f.label}
-                          {f.optional && <span className="opt-tag">Opcional</span>}
-                        </label>
-                        {f.type === 'input' ? (
-                          <input
-                            className="inp"
-                            type="text"
-                            value={formData[f.key] || ''}
-                            onChange={(e) => updateField(f.key, e.target.value)}
-                            placeholder={f.placeholder || 'Digite aqui...'}
-                          />
-                        ) : (
-                          <textarea
-                            className="txa"
-                            value={formData[f.key] || ''}
-                            onChange={(e) => handleInput(f.key, e.target.value, e.target)}
-                            placeholder="Digite aqui..."
-                            rows={1}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* Estado FECHADO — dados resumidos */
+            <div className="client-card-summary">
+              <div className="client-card-row">
+                <div className="client-card-item">
+                  <span className="client-card-label">Empresa</span>
+                  <span className="client-card-value">{formData.clientCompany || '\u2014'}</span>
+                </div>
+                <div className="client-card-item">
+                  <span className="client-card-label">Nicho</span>
+                  <span className="client-card-value">{formData.clientNiche || '\u2014'}</span>
                 </div>
               </div>
-            );
-          })}
+              <div className="client-card-row">
+                <div className="client-card-item">
+                  <span className="client-card-label">Cidade</span>
+                  <span className="client-card-value">{formData.clientCity || '\u2014'}</span>
+                </div>
+                <div className="client-card-item">
+                  <span className="client-card-label">Site</span>
+                  <span className="client-card-value">{formData.clientWebsite || '\u2014'}</span>
+                </div>
+              </div>
+              <div className="client-card-row">
+                <div className="client-card-item">
+                  <span className="client-card-label">Instagram</span>
+                  <span className="client-card-value">{formData.clientInstagram || '\u2014'}</span>
+                </div>
+                <div className="client-card-item">
+                  <span className="client-card-label">Redes</span>
+                  <span className="client-card-value">{formData.clientOtherSocial || '\u2014'}</span>
+                </div>
+              </div>
+              <div className="client-card-row">
+                <div className="client-card-item">
+                  <span className="client-card-label">Concorrente 1</span>
+                  <span className="client-card-value">{formData.competitor1 || '\u2014'}</span>
+                </div>
+                <div className="client-card-item">
+                  <span className="client-card-label">Concorrente 2</span>
+                  <span className="client-card-value">{formData.competitor2 || '\u2014'}</span>
+                </div>
+                <div className="client-card-item">
+                  <span className="client-card-label">Concorrente 3</span>
+                  <span className="client-card-value">{formData.competitor3 || '\u2014'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="fcontent">
+          {reuniaoSections.map((sec) => (
+            <div key={sec.id}>
+              <div className="fsec" id={sec.id}>
+                <div className="fsec-bg">{sec.num}</div>
+                <div className="fsec-head">
+                  <div className="fsec-t">{sec.num}. {sec.title.toUpperCase()}</div>
+                  <div className="fsec-line" />
+                </div>
+                <div className="ffields">
+                  {sec.fields.map((f) => (
+                    <div className="ffield" key={f.key}>
+                      <label>
+                        {f.label}
+                        {f.optional && <span className="opt-tag">Opcional</span>}
+                      </label>
+                      {f.type === 'input' ? (
+                        <input
+                          className="inp"
+                          type="text"
+                          value={formData[f.key] || ''}
+                          onChange={(e) => updateField(f.key, e.target.value)}
+                          placeholder={f.placeholder || 'Digite aqui...'}
+                        />
+                      ) : (
+                        <textarea
+                          className="txa"
+                          value={formData[f.key] || ''}
+                          onChange={(e) => handleInput(f.key, e.target.value, e.target)}
+                          placeholder="Digite aqui..."
+                          rows={1}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

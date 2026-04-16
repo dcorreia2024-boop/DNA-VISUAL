@@ -60,7 +60,7 @@ const SECTIONS = [
     required: true,
     block: 'reuniao',
     fields: [
-      { key: 'existingIdentity', label: 'O que o cliente j\u00e1 tem de identidade visual \u2014 logo, cores (HEX se tiver), fontes, manual de marca? Onde est\u00e3o os arquivos?' },
+      { key: 'existingIdentity', label: 'O que o cliente j\u00e1 tem de identidade visual \u2014 logo (em quais formatos: PNG, SVG, AI, PDF?), cores (c\u00f3digos HEX se tiver), fontes (tem os arquivos?), manual de marca? Onde est\u00e3o os arquivos?' },
       { key: 'visualStyle', label: 'Qual estilo visual o cliente quer \u2014 minimalista, vibrante, premium, popular, moderno, cl\u00e1ssico? Tem alguma marca de qualquer segmento que admira visualmente?' },
       { key: 'visualHate', label: 'O que o cliente detesta visualmente? O que N\u00c3O pode aparecer nos materiais de jeito nenhum?' },
     ],
@@ -72,7 +72,7 @@ const SECTIONS = [
     required: true,
     block: 'reuniao',
     fields: [
-      { key: 'existingMaterials', label: 'Que fotos e v\u00eddeos o cliente j\u00e1 tem? (produto, equipe, espa\u00e7o, bastidores, depoimentos) Onde est\u00e3o os arquivos?' },
+      { key: 'existingMaterials', label: 'Que fotos e v\u00eddeos o cliente j\u00e1 tem? (produto, equipe, espa\u00e7o, bastidores, depoimentos) Onde est\u00e3o os arquivos? (cola o link do Drive ou Dropbox)' },
       { key: 'missingMaterials', label: 'O que o cliente N\u00c3O tem e vai precisar ser criado do zero? (fotos, v\u00eddeos, logo, manual, templates)' },
       { key: 'pastResults', label: 'Alguma campanha ou material anterior funcionou muito bem? O que funcionou e por qu\u00ea? E algum que foi um desastre?' },
     ],
