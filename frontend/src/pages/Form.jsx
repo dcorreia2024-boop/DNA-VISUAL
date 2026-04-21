@@ -71,22 +71,21 @@ export default function Form() {
     const clientCompany = (formData.clientCompany || '').trim();
     if (!clientCompany) { alert('Preencha o nome da empresa nos Dados do Cliente.'); setCardOpen(true); return; }
 
+    // Avisa (nao bloqueia) se secoes obrigatorias estao incompletas
     const requiredReuniao = reuniaoSections.filter(s => s.required);
-    const missing = requiredReuniao.filter(s => !s.fields.some(f => (formData[f.key] || '').trim()));
-    if (missing.length > 0) {
-      setPulseSections(missing.map(s => s.id));
-      navTo(missing[0].id);
-      setTimeout(() => setPulseSections([]), 3000);
-      return;
-    }
-
-    const partial = requiredReuniao.filter(s => {
+    const incomplete = requiredReuniao.filter(s => {
       const filled = s.fields.filter(f => (formData[f.key] || '').trim()).length;
-      return filled > 0 && filled < s.fields.length;
+      return filled < s.fields.length;
     });
-    if (partial.length) {
-      const names = partial.map(s => `${s.num}. ${s.title}`).join(', ');
-      if (!confirm(`As se\u00e7\u00f5es ${names} t\u00eam campos vazios. Deseja gerar mesmo assim?`)) return;
+
+    if (incomplete.length > 0) {
+      const names = incomplete.map(s => `${s.num}. ${s.title}`).join(', ');
+      setPulseSections(incomplete.map(s => s.id));
+      setTimeout(() => setPulseSections([]), 3000);
+      if (!confirm(`Algumas se\u00e7\u00f5es est\u00e3o incompletas:\n\n${names}\n\nDeseja gerar o dossi\u00ea mesmo assim?`)) {
+        navTo(incomplete[0].id);
+        return;
+      }
     }
 
     navigate('/output');
