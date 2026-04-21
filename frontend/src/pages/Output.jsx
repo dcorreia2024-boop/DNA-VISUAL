@@ -199,10 +199,15 @@ export default function Output() {
         if (!response.ok) throw new Error('API response not ok');
         const data = await response.json();
         if (cancelled) return;
-        if (data.mode === 'api' && data.dossie) {
+        if (data.mode === 'api' && data.dossie && data.format === 'json' && typeof data.dossie === 'object') {
+          // Apenas ativa API mode se JSON valido
           setDossie(data.dossie);
-          setDossieFormat(data.format || (typeof data.dossie === 'string' ? 'text' : 'json'));
+          setDossieFormat('json');
           setApiMode(true);
+        } else if (data.mode === 'api' && data.format === 'text') {
+          // JSON falhou, a IA respondeu com texto — nao ativa API mode,
+          // usa layout manual (perguntas/respostas) para nao mostrar JSON cru
+          setApiError('A IA retornou formato inesperado. Usando modo manual.');
         } else if (data.mode === 'fallback') {
           setApiError(data.error || 'API indisponivel');
         }

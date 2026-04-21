@@ -169,7 +169,7 @@ async function callOpenRouter(userContent, systemPrompt) {
         { role: 'user', content: userContent }
       ],
       temperature: 0.5,
-      max_tokens: 6000
+      max_tokens: 10000
     })
   });
 
@@ -186,17 +186,69 @@ async function callOpenRouter(userContent, systemPrompt) {
 }
 
 function parseDossierJson(raw) {
+  const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
   // Tenta parser direto
-  try {
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(cleaned);
-  } catch {
-    // Extrai o maior bloco JSON valido
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (match) {
-      try { return JSON.parse(match[0]); } catch { return null; }
+  try { return JSON.parse(cleaned); } catch {}
+
+  // Extrai o bloco JSON que comeca com {
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  if (match) {
+    try { return JSON.parse(match[0]); } catch {}
+  }
+
+  // Tenta reparar JSON truncado: pega do primeiro { ate onde puder parsear
+  const start = cleaned.indexOf('{');
+  if (start === -1) return null;
+  const text = cleaned.slice(start);
+
+  // Conta chaves/colchetes abertos e fecha-os
+  let depth = { brace: 0, bracket: 0 };
+  let inString = false;
+  let escape = false;
+  let lastValidPos = -1;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) { escape = false; continue; }
+    if (ch === '\\') { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') depth.brace++;
+    else if (ch === '}') { depth.brace--; if (depth.brace === 0 && depth.bracket === 0) lastValidPos = i; }
+    else if (ch === '[') depth.bracket++;
+    else if (ch === ']') depth.bracket--;
+  }
+
+  // Se parou em string aberta, corta antes da ultima virgula valida
+  if (inString) {
+    // Encontra a ultima virgula fora de string
+    let cut = -1;
+    let inStr = false;
+    let esc = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (esc) { esc = false; continue; }
+      if (ch === '\\') { esc = true; continue; }
+      if (ch === '"') inStr = !inStr;
+      if (!inStr && ch === ',') cut = i;
+    }
+    if (cut > 0) {
+      let repaired = text.slice(0, cut);
+      // Conta de novo para fechar
+      let b = 0, k = 0, s = false, e = false;
+      for (let i = 0; i < repaired.length; i++) {
+        const ch = repaired[i];
+        if (e) { e = false; continue; }
+        if (ch === '\\') { e = true; continue; }
+        if (ch === '"') s = !s;
+        if (!s) { if (ch === '{') b++; else if (ch === '}') b--; else if (ch === '[') k++; else if (ch === ']') k--; }
+      }
+      repaired += ']'.repeat(Math.max(0, k)) + '}'.repeat(Math.max(0, b));
+      try { return JSON.parse(repaired); } catch {}
     }
   }
+
   return null;
 }
 
