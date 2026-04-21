@@ -48,7 +48,6 @@ export default function Upload() {
         const buffer = e.target.result;
         const base64 = arrayBufferToBase64(buffer);
         sessionStorage.setItem('uploadedFileBase64', base64);
-        console.log('[Upload] Arquivo lido:', file.name, '| base64 chars:', base64.length);
         setIsReady(true);
       } catch (err) {
         console.error('[Upload] Erro ao ler arquivo:', err);

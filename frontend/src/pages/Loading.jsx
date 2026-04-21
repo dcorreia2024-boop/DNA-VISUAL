@@ -1,19 +1,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
-import { simAnalysis } from '../services/analyzer';
 import SECTIONS from '../data/sections';
 import './Loading.css';
 
-// Converte simAnalysis (formato aninhado {secId:{fieldKey:texto}}) para formato
-// flat {fieldKey:{found,content}} — mesmo formato que a API OpenRouter retorna
-function simAnalysisToFlat(content) {
-  const nested = simAnalysis(content);
+// Retorna analysis vazia (todos os campos found:false) para usar quando a API falha
+function emptyAnalysis() {
   const flat = {};
   SECTIONS.forEach(sec => {
     sec.fields.forEach(f => {
-      const text = (nested[sec.id]?.[f.key] || '').trim();
-      flat[f.key] = { found: !!text, content: text };
+      flat[f.key] = { found: false, content: '' };
     });
   });
   return flat;
@@ -56,14 +52,14 @@ export default function Loading() {
       if (!aborted.current) setSlowWarning(true);
     }, 60000);
 
-    // Analise assincrona: API primeiro, simAnalysis como fallback
     const analyzeDocument = async () => {
       const fileBase64 = sessionStorage.getItem('uploadedFileBase64') || '';
       const fileName = sessionStorage.getItem('uploadedFileName') || '';
       const legacyContent = sessionStorage.getItem('uploadedFileContent') || '';
 
       let analysis = null;
-      let textForFallback = legacyContent;
+      let extractedText = legacyContent;
+      let apiUnavailable = false;
 
       try {
         const body = fileBase64 && fileName
@@ -77,31 +73,35 @@ export default function Loading() {
           signal: abortController.current.signal
         });
 
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
         const data = await response.json();
-        console.log('[Loading] API mode:', data.mode, '| analysis keys:', data.analysis ? Object.keys(data.analysis).length : 0);
 
         if (data.mode === 'api' && data.analysis) {
-          // Usa o formato flat da IA direto — { fieldKey: { found, content } }
           analysis = data.analysis;
+        } else {
+          apiUnavailable = true;
         }
-        // Texto extraido pelo backend (mammoth) tambem vem de volta para fallback
-        if (data.extractedText) textForFallback = data.extractedText;
-        else if (data.content) textForFallback = data.content;
+        if (data.extractedText) extractedText = data.extractedText;
+        else if (data.content) extractedText = data.content;
       } catch (err) {
-        if (err.name === 'AbortError') { console.log('[Loading] Abortado'); return; }
+        if (err.name === 'AbortError') return;
         console.error('[Loading] API erro:', err.message);
+        apiUnavailable = true;
       }
 
       if (aborted.current) return;
 
-      // Fallback local se API nao retornou analysis
+      // Se API falhou, usa analysis vazia + guarda o texto extraido pro Result mostrar como referencia
       if (!analysis) {
-        console.log('[Loading] Usando simAnalysis local (fallback)');
-        analysis = simAnalysisToFlat(textForFallback);
+        analysis = emptyAnalysis();
       }
 
-      const foundCount = Object.values(analysis).filter(v => v && v.found).length;
-      console.log('[Loading] Total encontrados:', foundCount, '/', Object.keys(analysis).length);
+      // Guarda metadados para o Result mostrar banner apropriado
+      sessionStorage.setItem('analysisApiUnavailable', apiUnavailable ? '1' : '0');
+      if (extractedText) sessionStorage.setItem('extractedDocumentText', extractedText);
 
       dispatch({ type: 'LOAD_ANALYSIS', payload: analysis });
       navigate('/result', { replace: true });

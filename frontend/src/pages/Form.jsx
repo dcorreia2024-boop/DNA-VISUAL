@@ -12,12 +12,11 @@ export default function Form() {
   const { theme, toggleTheme } = useTheme();
   const autoResize = useAutoResize();
   const mainRef = useRef(null);
-  const [activeSection, setActiveSection] = useState('business');
-  const [pulseSections, setPulseSections] = useState([]);
-  const [cardOpen, setCardOpen] = useState(false);
-
   const baseSection = SECTIONS.find(s => s.block === 'dados-base');
   const reuniaoSections = SECTIONS.filter(s => s.block === 'reuniao');
+  const [activeSection, setActiveSection] = useState(reuniaoSections[0]?.id || '');
+  const [pulseSections, setPulseSections] = useState([]);
+  const [cardOpen, setCardOpen] = useState(false);
 
   const getSectionState = useCallback((sec) => {
     const filled = sec.fields.filter(f => (formData[f.key] || '').trim()).length;

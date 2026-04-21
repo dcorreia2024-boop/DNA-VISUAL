@@ -187,39 +187,50 @@ export default function Output() {
   const baseSection = SECTIONS.find(s => s.block === 'dados-base');
   const reuniaoSections = SECTIONS.filter(s => s.block === 'reuniao');
 
-  // Try to generate via API on mount
+  // Try to generate via API on mount (timeout 45s)
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+
     const tryGenerate = async () => {
       try {
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ formData })
+          body: JSON.stringify({ formData }),
+          signal: controller.signal
         });
-        if (!response.ok) throw new Error('API response not ok');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (cancelled) return;
         if (data.mode === 'api' && data.dossie && data.format === 'json' && typeof data.dossie === 'object') {
-          // Apenas ativa API mode se JSON valido
           setDossie(data.dossie);
           setDossieFormat('json');
           setApiMode(true);
         } else if (data.mode === 'api' && data.format === 'text') {
-          // JSON falhou, a IA respondeu com texto — nao ativa API mode,
-          // usa layout manual (perguntas/respostas) para nao mostrar JSON cru
           setApiError('A IA retornou formato inesperado. Usando modo manual.');
         } else if (data.mode === 'fallback') {
           setApiError(data.error || 'API indisponivel');
         }
       } catch (err) {
-        if (!cancelled) setApiError('API offline');
+        if (cancelled) return;
+        if (err.name === 'AbortError') {
+          setApiError('A gera\u00e7\u00e3o demorou mais que 45 segundos. Use o modo manual (Baixar .md) ou tente novamente.');
+        } else {
+          setApiError('API indispon\u00edvel. Usando modo manual.');
+        }
       } finally {
+        clearTimeout(timeoutId);
         if (!cancelled) setLoading(false);
       }
     };
     tryGenerate();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const showFeedback = (type) => {
@@ -242,8 +253,14 @@ export default function Output() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const safeName = (formData.clientCompany || clientName).toLowerCase().replace(/[^a-z0-9]/g, '-');
-    a.download = `dossie-${safeName}.md`;
+    const safeName = (formData.clientCompany || clientName || 'cliente')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    a.download = `dossie-${safeName || 'cliente'}.md`;
     a.click();
     URL.revokeObjectURL(url);
     showFeedback('dl');

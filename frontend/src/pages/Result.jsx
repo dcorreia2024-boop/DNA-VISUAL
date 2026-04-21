@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
@@ -17,14 +17,11 @@ function getContent(analysisData, fieldKey) {
 
 export default function Result() {
   const navigate = useNavigate();
-  const { analysisData, formData, updateField, dispatch } = useForm();
+  const { analysisData, formData, updateField } = useForm();
   const [manualData, setManualData] = useState({});
   const [clientName, setClientName] = useState('');
-
-  useEffect(() => {
-    const found = Object.values(analysisData).filter(v => v && v.found).length;
-    console.log('[Result] Total fields found:', found, '/', Object.keys(analysisData).length);
-  }, [analysisData]);
+  const apiUnavailable = sessionStorage.getItem('analysisApiUnavailable') === '1';
+  const extractedText = sessionStorage.getItem('extractedDocumentText') || '';
 
   const updateManual = useCallback((key, value) => {
     setManualData((prev) => ({ ...prev, [key]: value }));
@@ -45,14 +42,13 @@ export default function Result() {
     mergeAll();
     if (clientName.trim()) updateField('clientName', clientName.trim());
     else if (!formData.clientName) updateField('clientName', 'Cliente (via an\u00e1lise)');
-    if (!formData.designerName) updateField('designerName', 'Designer');
-    setTimeout(() => navigate('/output'), 50);
+    requestAnimationFrame(() => navigate('/output'));
   };
 
   const handleComplete = () => {
     mergeAll();
     if (clientName.trim()) updateField('clientName', clientName.trim());
-    setTimeout(() => navigate('/form'), 50);
+    requestAnimationFrame(() => navigate('/form'));
   };
 
   return (
@@ -63,7 +59,22 @@ export default function Result() {
         <button className="btn-back" onClick={() => navigate('/')} style={{ marginLeft: 'auto' }}>HOME</button>
       </div>
 
-      <div className="res-cols">
+      {apiUnavailable && (
+        <div style={{
+          background: 'rgba(192, 57, 43, 0.08)',
+          border: '1px solid rgba(192, 57, 43, 0.3)',
+          borderLeft: '3px solid var(--red, #C0392B)',
+          padding: '12px 20px',
+          margin: '70px 32px 0 32px',
+          fontSize: 13,
+          color: 'var(--text-secondary, #AAA)'
+        }}>
+          <strong style={{ color: 'var(--red, #C0392B)', textTransform: 'uppercase', letterSpacing: 1, fontSize: 11, display: 'block', marginBottom: 4 }}>An&aacute;lise autom&aacute;tica indispon&iacute;vel</strong>
+          A IA n&atilde;o est&aacute; dispon&iacute;vel no momento. Use o formul&aacute;rio ao lado para preencher os campos manualmente com base no conte&uacute;do do documento.
+        </div>
+      )}
+
+      <div className="res-cols" style={apiUnavailable ? { marginTop: 20 } : {}}>
         <div className="res-col res-found">
           <div className="res-name">
             <label>Nome do Cliente:</label>
@@ -75,6 +86,25 @@ export default function Result() {
               placeholder="Digite o nome do cliente"
             />
           </div>
+          {apiUnavailable && extractedText && (
+            <div style={{ marginBottom: 20 }}>
+              <div className="res-ct" style={{ fontSize: 16 }}>CONTE&Uacute;DO DO DOCUMENTO</div>
+              <div style={{
+                maxHeight: 300,
+                overflowY: 'auto',
+                fontSize: 12,
+                color: 'var(--text-tertiary, #888)',
+                lineHeight: 1.6,
+                background: 'var(--bg-input, #111)',
+                padding: 16,
+                border: '1px solid var(--border-default, #1A1A1A)',
+                whiteSpace: 'pre-wrap'
+              }}>
+                {extractedText.slice(0, 3000)}
+                {extractedText.length > 3000 && '\n\n[... texto truncado ...]'}
+              </div>
+            </div>
+          )}
           <div className="res-ct">O QUE FOI ENCONTRADO</div>
           {SECTIONS.map((sec) => {
             const filledFields = sec.fields.filter((f) => isFound(analysisData, f.key));

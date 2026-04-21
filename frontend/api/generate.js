@@ -6,11 +6,38 @@ REGRAS CRITICAS:
 - Responda APENAS com JSON valido. Sem markdown, sem texto antes ou depois, sem backticks.
 - Linguagem pratica e acionavel
 - Se informacao nao foi fornecida, use null ou string vazia / array vazio
-- Sugira cores com codigos HEX reais e nomes descritivos
-- Sugira tipografia com nomes de fontes reais do Google Fonts
 - Diferencie o que o cliente TEM do que PRECISA SER CRIADO
 - Gere 3-4 exemplos concretos de copy ON-BRAND e OFF-BRAND
 - Liste acoes imediatas praticas no checklist
+
+REGRA PARA CONCORRENTES:
+- Use PRIMARIAMENTE as informacoes que o cliente deu sobre os concorrentes
+- Se voce nao tem informacoes especificas sobre um concorrente, seja HONESTO no campo:
+  doWell: "Informacao insuficiente — pesquisar o perfil antes de produzir material"
+  doBad: "Informacao insuficiente — pesquisar o perfil"
+  differentiation: "Definir apos pesquisa dos concorrentes"
+- NAO invente analises genericas como "Nao oferece solucoes de tecnologia de ponta"
+- E melhor dizer que falta informacao do que inventar analises superficiais
+
+REGRA PARA CORES:
+- Nomes descritivos e evocativos — NAO use nomes genericos tipo "Azul" ou "Roxo"
+- Use nomes como "Azul Eletrico", "Violeta Tech", "Rosa Quartzo", "Verde Musgo", "Bege Organico"
+- No campo "usage", seja ESPECIFICO sobre onde usar:
+  BOM: "Fundos de cards, CTAs principais, estados de hover"
+  RUIM: "uso geral"
+- Sugira 3-4 cores: primaria, secundaria, neutra e opcionalmente uma de apoio
+- Use codigos HEX reais e acessiveis (contraste minimo 4.5:1 para texto)
+
+REGRA PARA TIPOGRAFIA:
+- Use nomes de fontes reais do Google Fonts (ex: Inter, Playfair Display, DM Sans, Montserrat)
+- Especifique peso (Regular 400, Medium 500, Bold 700)
+- Uso deve ser concreto: "Headlines H1 e H2", "Corpo de texto 14-16px", "Labels e legendas"
+
+REGRA PARA CHECKLIST (pendingQuestions):
+- As perguntas pendentes devem ser APENAS sobre informacoes que NAO foram fornecidas
+- Se o cliente ja respondeu sobre publico-alvo, NAO pergunte "qual o publico-alvo"
+- Foque em gaps reais: arquivos pendentes (logo em SVG?), decisoes nao tomadas (aprovacao da paleta?), informacoes estrategicas ausentes (orcamento para producao?)
+- Se todas as informacoes necessarias foram fornecidas, retorne array vazio []
 
 RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
 {
