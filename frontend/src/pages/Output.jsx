@@ -4,6 +4,7 @@ import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
 import { formatDossieText, formatForClaude, copyToClipboard } from '../services/clipboard';
 import DossieTemplate from '../components/DossieTemplate';
+import ErrorBoundary from '../components/ErrorBoundary';
 import './Output.css';
 
 // Converte dossie JSON em markdown pra export
@@ -271,13 +272,15 @@ export default function Output() {
         {/* LEFT — WHITE DOCUMENT */}
         <div className="doc-col">
           {/* API MODE with JSON: render visual template (no doc-inner padding) */}
-          {!loading && apiMode && dossieFormat === 'json' && dossie && (
-            <DossieTemplate
-              data={dossie}
-              clientName={clientName}
-              designerName={designerName}
-              dateStr={dateStr}
-            />
+          {!loading && apiMode && dossieFormat === 'json' && dossie && typeof dossie === 'object' && (
+            <ErrorBoundary>
+              <DossieTemplate
+                data={dossie}
+                clientName={clientName}
+                designerName={designerName}
+                dateStr={dateStr}
+              />
+            </ErrorBoundary>
           )}
 
           {/* Other modes: use the old doc-inner layout */}
