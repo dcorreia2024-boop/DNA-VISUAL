@@ -15,6 +15,6 @@ app.use('/api/generate', generateRoute);
 app.use('/api/analyze', analyzeRoute);
 app.use('/api/clients', clientsRoute);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', mode: process.env.CLAUDE_API_KEY ? 'api' : 'local' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', mode: process.env.OPENROUTER_API_KEY ? 'api' : 'local' }));
 
 app.listen(PORT, () => console.log(`DNA Visual backend running on port ${PORT}`));
