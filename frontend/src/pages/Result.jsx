@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
@@ -9,6 +9,17 @@ export default function Result() {
   const { analysisData, formData, updateField, dispatch } = useForm();
   const [manualData, setManualData] = useState({});
   const [clientName, setClientName] = useState('');
+
+  useEffect(() => {
+    const summary = {};
+    SECTIONS.forEach(sec => {
+      const secData = analysisData[sec.id] || {};
+      const filled = sec.fields.filter(f => (secData[f.key] || '').trim()).length;
+      summary[sec.id] = filled + '/' + sec.fields.length;
+    });
+    console.log('[Result] analysisData sections:', Object.keys(analysisData));
+    console.log('[Result] Campos por secao:', summary);
+  }, [analysisData]);
 
   const updateManual = useCallback((key, value) => {
     setManualData((prev) => ({ ...prev, [key]: value }));

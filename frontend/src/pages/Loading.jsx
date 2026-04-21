@@ -133,7 +133,13 @@ export default function Loading() {
       const remaining = Math.max(0, minDuration - elapsed);
 
       setTimeout(() => {
-        if (aborted.current) return;
+        if (aborted.current) { console.log('[Loading] Abort antes de navegar'); return; }
+        console.log('[Loading] Despachando LOAD_ANALYSIS e navegando para /result. Payload sections:', Object.keys(analysis));
+        const filledBySection = {};
+        Object.entries(analysis).forEach(([secId, fields]) => {
+          filledBySection[secId] = Object.values(fields).filter(v => (v || '').trim()).length;
+        });
+        console.log('[Loading] Campos preenchidos por secao:', filledBySection);
         dispatch({ type: 'LOAD_ANALYSIS', payload: analysis });
         navigate('/result', { replace: true });
       }, remaining);
