@@ -65,7 +65,7 @@ export default function Upload() {
         >
           <div className="dz-icon" />
           <div className="dz-t">Arraste o arquivo aqui ou clique para selecionar</div>
-          <div className="dz-s">Aceita DOCX ou TXT (m&aacute;x. 10MB)</div>
+          <div className="dz-s">Aceita DOCX ou TXT (m&aacute;x. 10MB) &mdash; TXT recomendado</div>
         </div>
         <input
           type="file"
