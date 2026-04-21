@@ -4,6 +4,17 @@ import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
 import './Result.css';
 
+// analysisData agora eh flat: { fieldKey: { found, content } }
+function isFound(analysisData, fieldKey) {
+  const item = analysisData[fieldKey];
+  return !!(item && item.found && (item.content || '').trim());
+}
+
+function getContent(analysisData, fieldKey) {
+  const item = analysisData[fieldKey];
+  return item && item.found ? (item.content || '').trim() : '';
+}
+
 export default function Result() {
   const navigate = useNavigate();
   const { analysisData, formData, updateField, dispatch } = useForm();
@@ -11,14 +22,8 @@ export default function Result() {
   const [clientName, setClientName] = useState('');
 
   useEffect(() => {
-    const summary = {};
-    SECTIONS.forEach(sec => {
-      const secData = analysisData[sec.id] || {};
-      const filled = sec.fields.filter(f => (secData[f.key] || '').trim()).length;
-      summary[sec.id] = filled + '/' + sec.fields.length;
-    });
-    console.log('[Result] analysisData sections:', Object.keys(analysisData));
-    console.log('[Result] Campos por secao:', summary);
+    const found = Object.values(analysisData).filter(v => v && v.found).length;
+    console.log('[Result] Total fields found:', found, '/', Object.keys(analysisData).length);
   }, [analysisData]);
 
   const updateManual = useCallback((key, value) => {
@@ -27,10 +32,9 @@ export default function Result() {
 
   const mergeAll = useCallback(() => {
     SECTIONS.forEach((sec) => {
-      const secData = analysisData[sec.id] || {};
       sec.fields.forEach((f) => {
         const manual = (manualData[f.key] || '').trim();
-        const found = (secData[f.key] || '').trim();
+        const found = getContent(analysisData, f.key);
         if (manual) updateField(f.key, manual);
         else if (found) updateField(f.key, found);
       });
@@ -55,7 +59,7 @@ export default function Result() {
     <div className="res-screen">
       <div className="res-top">
         <button className="btn-back" onClick={() => navigate('/upload')}>&larr; VOLTAR</button>
-        <span style={{ fontSize: 13, color: 'var(--g300)' }}>Resultado da An&aacute;lise</span>
+        <span style={{ fontSize: 13, color: 'var(--text-secondary, #AAA)' }}>Resultado da An&aacute;lise</span>
         <button className="btn-back" onClick={() => navigate('/')} style={{ marginLeft: 'auto' }}>HOME</button>
       </div>
 
@@ -73,9 +77,8 @@ export default function Result() {
           </div>
           <div className="res-ct">O QUE FOI ENCONTRADO</div>
           {SECTIONS.map((sec) => {
-            const secData = analysisData[sec.id] || {};
-            const filledFields = sec.fields.filter((f) => (secData[f.key] || '').trim());
-            const emptyFields = sec.fields.filter((f) => !(secData[f.key] || '').trim());
+            const filledFields = sec.fields.filter((f) => isFound(analysisData, f.key));
+            const emptyFields = sec.fields.filter((f) => !isFound(analysisData, f.key));
             if (filledFields.length === 0) return null;
             const status = emptyFields.length === 0 ? 'ok' : 'part';
             return (
@@ -86,7 +89,10 @@ export default function Result() {
                   <span className="res-sl">{sec.title}</span>
                 </div>
                 {filledFields.map((f) => (
-                  <div className="res-txt" key={f.key}>{secData[f.key]}</div>
+                  <div className="res-field-block" key={f.key}>
+                    <div className="res-field-label">{f.label.split('?')[0].split('\u2014')[0].trim()}</div>
+                    <div className="res-txt">{getContent(analysisData, f.key)}</div>
+                  </div>
                 ))}
               </div>
             );
@@ -96,8 +102,7 @@ export default function Result() {
         <div className="res-col res-miss">
           <div className="res-ct">O QUE EST&Aacute; FALTANDO</div>
           {SECTIONS.map((sec) => {
-            const secData = analysisData[sec.id] || {};
-            const emptyFields = sec.fields.filter((f) => !(secData[f.key] || '').trim());
+            const emptyFields = sec.fields.filter((f) => !isFound(analysisData, f.key));
             if (emptyFields.length === 0) return null;
             return (
               <div className="res-sec" key={sec.id}>

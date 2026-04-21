@@ -15,7 +15,9 @@
 .res-st.ok { background: var(--green) }
 .res-st.part { background: var(--yellow) }
 .res-st.no { background: var(--red) }
-.res-txt { font-size: 13px; color: var(--text-tertiary); line-height: 1.6; white-space: pre-wrap }
+.res-txt { font-size: 13px; color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; padding: 8px 12px; background: var(--border-subtle); border-left: 2px solid var(--red); margin-top: 4px }
+.res-field-block { margin-bottom: 12px }
+.res-field-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500 }
 .res-ft { position: fixed; bottom: 0; left: 0; right: 0; background: color-mix(in srgb, var(--bg) 95%, transparent); backdrop-filter: blur(8px); border-top: 1px solid var(--border-default); padding: 16px 32px; display: flex; justify-content: center; gap: 12px; z-index: 50 }
 .res-miss-field { margin-bottom: 12px }
 .res-miss-field label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; display: block }

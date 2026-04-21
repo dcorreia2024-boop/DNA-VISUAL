@@ -5,22 +5,18 @@ import { simAnalysis } from '../services/analyzer';
 import SECTIONS from '../data/sections';
 import './Loading.css';
 
-// Map each field key to its section id (for normalizing API response)
-const FIELD_TO_SECTION = {};
-SECTIONS.forEach(sec => sec.fields.forEach(f => { FIELD_TO_SECTION[f.key] = sec.id; }));
-
-// Convert API response { fieldKey: { found, content } } to
-// simAnalysis format { sectionId: { fieldKey: content } }
-function normalizeApiAnalysis(apiAnalysis) {
-  const result = {};
-  SECTIONS.forEach(sec => { result[sec.id] = {}; });
-  Object.entries(apiAnalysis || {}).forEach(([fieldKey, data]) => {
-    const secId = FIELD_TO_SECTION[fieldKey];
-    if (!secId) return;
-    const content = data && typeof data === 'object' && data.found ? (data.content || '') : '';
-    result[secId][fieldKey] = content;
+// Converte simAnalysis (formato aninhado {secId:{fieldKey:texto}}) para formato
+// flat {fieldKey:{found,content}} — mesmo formato que a API OpenRouter retorna
+function simAnalysisToFlat(content) {
+  const nested = simAnalysis(content);
+  const flat = {};
+  SECTIONS.forEach(sec => {
+    sec.fields.forEach(f => {
+      const text = (nested[sec.id]?.[f.key] || '').trim();
+      flat[f.key] = { found: !!text, content: text };
+    });
   });
-  return result;
+  return flat;
 }
 
 export default function Loading() {
@@ -29,60 +25,50 @@ export default function Loading() {
   const [visibleItems, setVisibleItems] = useState([]);
   const [showCancel, setShowCancel] = useState(false);
   const [statusText, setStatusText] = useState('Analisando o documento...');
+  const [slowWarning, setSlowWarning] = useState(false);
   const aborted = useRef(false);
   const abortController = useRef(null);
-  const startTime = useRef(Date.now());
 
   useEffect(() => {
-    startTime.current = Date.now();
     aborted.current = false;
     abortController.current = new AbortController();
 
-    // Animação sequencial de seções
+    // Animacao sequencial das secoes
     const timers = SECTIONS.map((_, i) =>
       setTimeout(() => {
         if (!aborted.current) setVisibleItems((prev) => [...prev, i]);
       }, 200 + i * 300)
     );
 
+    // Botao cancelar aparece depois de 1.5s
     const cancelTimer = setTimeout(() => {
       if (!aborted.current) setShowCancel(true);
     }, 1500);
 
-    // Trocar mensagem depois de um tempo (transparência de espera)
+    // Mensagens de status evolutivas (transparencia de espera)
     const statusTimer1 = setTimeout(() => {
       if (!aborted.current) setStatusText('A IA est\u00e1 lendo o conte\u00fado...');
-    }, 4000);
+    }, 5000);
     const statusTimer2 = setTimeout(() => {
       if (!aborted.current) setStatusText('Quase l\u00e1... extraindo informa\u00e7\u00f5es');
-    }, 15000);
+    }, 20000);
+    const slowTimer = setTimeout(() => {
+      if (!aborted.current) setSlowWarning(true);
+    }, 60000);
 
-    // Analise assincrona (API com fallback local)
-    const analyze = async () => {
+    // Analise assincrona: API primeiro, simAnalysis como fallback
+    const analyzeDocument = async () => {
       const fileBase64 = sessionStorage.getItem('uploadedFileBase64') || '';
       const fileName = sessionStorage.getItem('uploadedFileName') || '';
-      // Fallback para fluxo antigo (content direto)
       const legacyContent = sessionStorage.getItem('uploadedFileContent') || '';
-      let analysis = null;
-      let extractedText = '';
 
-      console.log('[Loading] Iniciando analise:', {
-        hasBase64: !!fileBase64,
-        base64Length: fileBase64.length,
-        fileName,
-        hasLegacyContent: !!legacyContent
-      });
+      let analysis = null;
+      let textForFallback = legacyContent;
 
       try {
         const body = fileBase64 && fileName
           ? { fileBase64, fileName }
           : { content: legacyContent };
-
-        console.log('[Loading] Enviando request:', {
-          endpoint: '/api/analyze',
-          bodyKeys: Object.keys(body),
-          payloadSize: JSON.stringify(body).length
-        });
 
         const response = await fetch('/api/analyze', {
           method: 'POST',
@@ -91,61 +77,37 @@ export default function Loading() {
           signal: abortController.current.signal
         });
 
-        console.log('[Loading] Response recebida:', response.status, response.statusText);
-
         const data = await response.json();
-        console.log('[Loading] Data:', {
-          mode: data.mode,
-          hasAnalysis: !!data.analysis,
-          hasExtractedText: !!data.extractedText,
-          extractedLength: data.extractedText?.length,
-          error: data.error
-        });
+        console.log('[Loading] API mode:', data.mode, '| analysis keys:', data.analysis ? Object.keys(data.analysis).length : 0);
 
-        if (data.extractedText) extractedText = data.extractedText;
         if (data.mode === 'api' && data.analysis) {
-          analysis = normalizeApiAnalysis(data.analysis);
-          const foundCount = Object.values(data.analysis).filter(v => v && v.found).length;
-          console.log('[Loading] Analysis: ' + foundCount + ' campos encontrados pela IA');
-        } else if (data.content) {
-          // API retornou o texto extraido mesmo em fallback — usa no simAnalysis
-          extractedText = data.content;
+          // Usa o formato flat da IA direto — { fieldKey: { found, content } }
+          analysis = data.analysis;
         }
+        // Texto extraido pelo backend (mammoth) tambem vem de volta para fallback
+        if (data.extractedText) textForFallback = data.extractedText;
+        else if (data.content) textForFallback = data.content;
       } catch (err) {
-        if (err.name === 'AbortError') {
-          console.log('[Loading] Request abortado');
-          return;
-        }
+        if (err.name === 'AbortError') { console.log('[Loading] Abortado'); return; }
         console.error('[Loading] API erro:', err.message);
       }
 
-      if (aborted.current) { console.log('[Loading] Cancelado pelo usuario'); return; }
+      if (aborted.current) return;
 
-      // Fallback local se API falhou — usa texto extraido pelo backend se tiver, senao o content legado
+      // Fallback local se API nao retornou analysis
       if (!analysis) {
-        const textForLocal = extractedText || legacyContent;
-        analysis = simAnalysis(textForLocal);
+        console.log('[Loading] Usando simAnalysis local (fallback)');
+        analysis = simAnalysisToFlat(textForFallback);
       }
 
-      // Garante que a animacao rode pelo menos 2s para nao "piscar"
-      const minDuration = SECTIONS.length * 300 + 800;
-      const elapsed = Date.now() - startTime.current;
-      const remaining = Math.max(0, minDuration - elapsed);
+      const foundCount = Object.values(analysis).filter(v => v && v.found).length;
+      console.log('[Loading] Total encontrados:', foundCount, '/', Object.keys(analysis).length);
 
-      setTimeout(() => {
-        if (aborted.current) { console.log('[Loading] Abort antes de navegar'); return; }
-        console.log('[Loading] Despachando LOAD_ANALYSIS e navegando para /result. Payload sections:', Object.keys(analysis));
-        const filledBySection = {};
-        Object.entries(analysis).forEach(([secId, fields]) => {
-          filledBySection[secId] = Object.values(fields).filter(v => (v || '').trim()).length;
-        });
-        console.log('[Loading] Campos preenchidos por secao:', filledBySection);
-        dispatch({ type: 'LOAD_ANALYSIS', payload: analysis });
-        navigate('/result', { replace: true });
-      }, remaining);
+      dispatch({ type: 'LOAD_ANALYSIS', payload: analysis });
+      navigate('/result', { replace: true });
     };
 
-    analyze();
+    analyzeDocument();
 
     return () => {
       aborted.current = true;
@@ -154,6 +116,7 @@ export default function Loading() {
       clearTimeout(cancelTimer);
       clearTimeout(statusTimer1);
       clearTimeout(statusTimer2);
+      clearTimeout(slowTimer);
     };
   }, [dispatch, navigate]);
 
@@ -166,6 +129,11 @@ export default function Loading() {
   return (
     <div className="ld-screen">
       <div className="ld-t">{statusText}</div>
+      {slowWarning && (
+        <div style={{ fontSize: 12, color: 'var(--text-muted, #888)', marginTop: -24, marginBottom: 32, textAlign: 'center', maxWidth: 400 }}>
+          Est&aacute; demorando mais que o normal. Voc&ecirc; pode cancelar e tentar de novo.
+        </div>
+      )}
       <div className="ld-secs">
         {SECTIONS.map((s, i) => (
           <div className={`ld-i${visibleItems.includes(i) ? ' vis' : ''}`} key={s.id}>
