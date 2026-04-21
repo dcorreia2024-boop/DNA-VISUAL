@@ -187,13 +187,17 @@ export default function Output() {
   const baseSection = SECTIONS.find(s => s.block === 'dados-base');
   const reuniaoSections = SECTIONS.filter(s => s.block === 'reuniao');
 
-  // Try to generate via API on mount (timeout 45s)
+  // Try to generate via API on mount (timeout 120s — Llama 3.3 70B free leva 60-90s tipico)
+  const [retryCount, setRetryCount] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     const tryGenerate = async () => {
+      setLoading(true);
+      setApiError(null);
       try {
         const response = await fetch('/api/generate', {
           method: 'POST',
@@ -208,17 +212,22 @@ export default function Output() {
           setDossie(data.dossie);
           setDossieFormat('json');
           setApiMode(true);
-        } else if (data.mode === 'api' && data.format === 'text') {
-          setApiError('A IA retornou formato inesperado. Usando modo manual.');
+        } else if (data.mode === 'api' && data.format === 'text' && typeof data.dossie === 'string') {
+          // IA retornou markdown em vez de JSON — ainda mostra, so nao usa template visual
+          setDossie(data.dossie);
+          setDossieFormat('text');
+          setApiMode(true);
         } else if (data.mode === 'fallback') {
-          setApiError(data.error || 'API indisponivel');
+          setApiError(data.error || 'API indispon\u00edvel');
+        } else if (data.mode === 'local') {
+          setApiError('API n\u00e3o configurada. Modo manual ativo.');
         }
       } catch (err) {
         if (cancelled) return;
         if (err.name === 'AbortError') {
-          setApiError('A gera\u00e7\u00e3o demorou mais que 45 segundos. Use o modo manual (Baixar .md) ou tente novamente.');
+          setApiError('A gera\u00e7\u00e3o demorou mais de 2 minutos. Clique em "Tentar novamente" ou use o modo manual.');
         } else {
-          setApiError('API indispon\u00edvel. Usando modo manual.');
+          setApiError('API indispon\u00edvel. ' + (err.message || 'Usando modo manual.'));
         }
       } finally {
         clearTimeout(timeoutId);
@@ -231,7 +240,14 @@ export default function Output() {
       controller.abort();
       clearTimeout(timeoutId);
     };
-  }, []);
+  }, [retryCount]);
+
+  const handleRetry = () => {
+    setApiMode(false);
+    setDossie(null);
+    setDossieFormat(null);
+    setRetryCount(c => c + 1);
+  };
 
   const showFeedback = (type) => {
     setFeedback(type);
@@ -325,7 +341,7 @@ export default function Output() {
               <div className="dossie-loading">
                 <div className="dossie-loading-spinner" />
                 <div className="dossie-loading-text">Gerando dossi&ecirc; com IA...</div>
-                <div className="dossie-loading-sub">Isso pode levar 15-30 segundos</div>
+                <div className="dossie-loading-sub">Isso pode levar 60-90 segundos</div>
               </div>
             )}
 
@@ -347,7 +363,23 @@ export default function Output() {
               <>
                 {apiError && (
                   <div className="api-error-note">
-                    <strong>Modo manual ativo.</strong> A IA n&atilde;o est&aacute; dispon&iacute;vel no momento. Use os bot&otilde;es ao lado para copiar e levar para outra IA.
+                    <strong>Modo manual ativo.</strong> {apiError}
+                    <button
+                      onClick={handleRetry}
+                      style={{
+                        marginLeft: 12,
+                        padding: '6px 14px',
+                        background: 'var(--red, #C0392B)',
+                        color: '#fff',
+                        border: 'none',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
+                        cursor: 'pointer',
+                        verticalAlign: 'middle'
+                      }}
+                    >Tentar novamente</button>
                   </div>
                 )}
 
