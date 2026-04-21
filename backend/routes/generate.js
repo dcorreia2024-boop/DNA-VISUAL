@@ -36,6 +36,19 @@ function formatFormDataForAI(formData) {
   return text;
 }
 
+function parseDossierJson(raw) {
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) {
+      try { return JSON.parse(match[0]); } catch { return null; }
+    }
+  }
+  return null;
+}
+
 router.post('/', async (req, res) => {
   const { formData } = req.body;
   if (!formData) return res.status(400).json({ error: 'formData is required' });
@@ -46,8 +59,11 @@ router.post('/', async (req, res) => {
 
   try {
     const userContent = formatFormDataForAI(formData);
-    const dossie = await callOpenRouter(userContent, DOSSIER_PROMPT);
-    return res.json({ mode: 'api', dossie });
+    const raw = await callOpenRouter(userContent, DOSSIER_PROMPT);
+    const json = parseDossierJson(raw);
+
+    if (json) return res.json({ mode: 'api', format: 'json', dossie: json });
+    return res.json({ mode: 'api', format: 'text', dossie: raw });
   } catch (err) {
     console.error('OpenRouter error:', err.message);
     return res.json({ mode: 'fallback', error: err.message });

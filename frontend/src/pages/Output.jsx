@@ -3,7 +3,125 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
 import { formatDossieText, formatForClaude, copyToClipboard } from '../services/clipboard';
+import DossieTemplate from '../components/DossieTemplate';
 import './Output.css';
+
+// Converte dossie JSON em markdown pra export
+function dossieJsonToMarkdown(data) {
+  if (!data) return '';
+  const lines = [];
+  lines.push(`# ${data.clientName || 'Cliente'} — Dossie de Identidade Visual\n`);
+  if (data.segment || data.city) lines.push(`${data.segment || ''}${data.city ? ' | ' + data.city : ''}\n`);
+  if (data.status) lines.push(`**Contexto:** ${data.status}\n`);
+
+  lines.push('\n## 1. IDENTIDADE DA MARCA\n');
+  if (data.positioning) lines.push(`> ${data.positioning}\n`);
+  if (data.mission) lines.push(`**Missao:** ${data.mission}`);
+  if (data.vision) lines.push(`**Visao:** ${data.vision}`);
+  if (data.values) lines.push(`**Valores:** ${data.values}`);
+  if (data.slogan) lines.push(`**Slogan:** "${data.slogan}"`);
+  if (data.personality?.length) lines.push(`**Personalidade:** ${data.personality.join(' | ')}`);
+  if (data.targetAge) lines.push(`\n**Publico:** ${data.targetAge}, ${data.targetGender || ''}, ${data.targetClass || ''}, ${data.targetLocation || ''}`);
+  if (data.targetBehavior) lines.push(`**Comportamento:** ${data.targetBehavior}`);
+  if (data.targetPain) lines.push(`**Dor:** ${data.targetPain}`);
+  if (data.valueProposition) lines.push(`\n**Proposta de valor:** ${data.valueProposition}`);
+  if (data.wantAssociations?.length) lines.push(`\n**Associar a:** ${data.wantAssociations.join(', ')}`);
+  if (data.avoidAssociations?.length) lines.push(`**Evitar:** ${data.avoidAssociations.join(', ')}`);
+
+  lines.push('\n## 2. DIRETRIZES VISUAIS\n');
+  if (data.colors?.length) {
+    lines.push('**Paleta de cores:**');
+    data.colors.forEach(c => lines.push(`- ${c.name} (${c.hex}) — ${c.role}: ${c.usage}`));
+  }
+  if (data.typography?.length) {
+    lines.push('\n**Tipografia:**');
+    data.typography.forEach(t => lines.push(`- ${t.family} ${t.weight} — ${t.usage} (${t.status})`));
+  }
+  if (data.visualStyle?.length) {
+    lines.push('\n**Estilo:** ' + data.visualStyle.map(s => s.adjective).join(', '));
+    data.visualStyle.forEach(s => lines.push(`- ${s.adjective}: ${s.description}`));
+  }
+  if (data.graphicElements?.length) lines.push('\n**Elementos graficos:** ' + data.graphicElements.join(', '));
+  if (data.visualDontDo?.length) {
+    lines.push('\n**Nao fazer:**');
+    data.visualDontDo.forEach(d => lines.push(`- ${d}`));
+  }
+
+  lines.push('\n## 3. TOM DE VOZ\n');
+  if (data.voiceAdjectives?.length) data.voiceAdjectives.forEach(v => lines.push(`- **${v.word}:** ${v.description}`));
+  if (data.communicationPersona) lines.push(`\n**Persona:** ${data.communicationPersona}`);
+  if (data.copyOnBrand?.length) {
+    lines.push('\n**Copy ON-BRAND:**');
+    data.copyOnBrand.forEach(c => lines.push(`- ✓ ${c}`));
+  }
+  if (data.copyOffBrand?.length) {
+    lines.push('\n**Copy OFF-BRAND:**');
+    data.copyOffBrand.forEach(c => lines.push(`- ✗ ${c}`));
+  }
+  if (data.alwaysUseWords?.length) lines.push('\n**Sempre usar:** ' + data.alwaysUseWords.join(', '));
+  if (data.neverUseWords?.length) lines.push('**Nunca usar:** ' + data.neverUseWords.join(', '));
+  if (data.platformGuidelines?.length) {
+    lines.push('\n**Por plataforma:**');
+    data.platformGuidelines.forEach(p => lines.push(`- **${p.platform}:** ${p.guideline}`));
+  }
+
+  lines.push('\n## 4. CONCORRENTES\n');
+  if (data.competitors?.length) {
+    data.competitors.forEach(c => {
+      lines.push(`### ${c.name} ${c.handle || ''} ${c.location ? '— ' + c.location : ''}`);
+      lines.push(`- **Faz bem:** ${c.doWell}`);
+      lines.push(`- **Faz mal:** ${c.doBad}`);
+      lines.push(`- **Diferenciacao:** ${c.differentiation}\n`);
+    });
+  }
+  if (data.visualReferences?.length) {
+    lines.push('**Referencias visuais:**');
+    data.visualReferences.forEach(r => lines.push(`- **${r.name}:** ${r.description}`));
+  }
+
+  lines.push('\n## 5. MATERIAIS E ATIVOS\n');
+  if (data.existingAssets?.length) {
+    lines.push('**Ja existe:**');
+    data.existingAssets.forEach(a => lines.push(`- ✓ **${a.name}** — ${a.details}`));
+  }
+  if (data.assetsToCreate?.length) {
+    lines.push('\n**Precisa ser criado:**');
+    data.assetsToCreate.forEach(a => lines.push(`- [${a.priority}] **${a.name}** — ${a.details}`));
+  }
+
+  lines.push('\n## 6. HISTORICO\n');
+  if (data.whatWorked) lines.push(`**Funcionou:** ${data.whatWorked.description} — *${data.whatWorked.why}*`);
+  if (data.whatFailed) lines.push(`**Falhou:** ${data.whatFailed.description} — *${data.whatFailed.why}*`);
+  if (data.currentMotivation) lines.push(`\n**Motivacao atual:** ${data.currentMotivation}`);
+  if (data.strategicNotes) lines.push(`\n⚠ **Nota estrategica:** ${data.strategicNotes}`);
+
+  lines.push('\n## 7. DIRECIONAMENTO POR ENTREGA\n');
+  if (data.deliveryGuidelines?.length) {
+    data.deliveryGuidelines.forEach(d => {
+      lines.push(`### ${d.type}`);
+      lines.push(`- **Objetivo:** ${d.objective}`);
+      lines.push(`- **Direcao visual:** ${d.visualDirection}`);
+      lines.push(`- **Evitar:** ${d.avoid}\n`);
+    });
+  }
+
+  lines.push('\n## 8. CHECKLIST DO DESIGNER\n');
+  if (data.immediateActions?.length) {
+    lines.push('**Acoes imediatas:**');
+    data.immediateActions.forEach(a => lines.push(`- [ ] ${a}`));
+  }
+  if (data.pendingItems?.length) {
+    lines.push('\n**Pendencias:**');
+    data.pendingItems.forEach(p => lines.push(`- **${p.item}** — ${p.details}`));
+  }
+  if (data.pendingQuestions?.length) {
+    lines.push('\n**Perguntas pendentes:**');
+    data.pendingQuestions.forEach(q => lines.push(`- ? ${q}`));
+  }
+  if (data.designerSummary) lines.push(`\n**Resumo:** ${data.designerSummary}`);
+
+  return lines.join('\n');
+}
 
 // Very minimal markdown renderer (headings, bold, lists, paragraphs)
 function renderMarkdown(md) {
@@ -56,6 +174,7 @@ export default function Output() {
 
   // API integration state
   const [dossie, setDossie] = useState(null);
+  const [dossieFormat, setDossieFormat] = useState(null); // 'json' | 'text'
   const [apiMode, setApiMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
@@ -82,6 +201,7 @@ export default function Output() {
         if (cancelled) return;
         if (data.mode === 'api' && data.dossie) {
           setDossie(data.dossie);
+          setDossieFormat(data.format || (typeof data.dossie === 'string' ? 'text' : 'json'));
           setApiMode(true);
         } else if (data.mode === 'fallback') {
           setApiError(data.error || 'API indisponivel');
@@ -103,9 +223,9 @@ export default function Output() {
 
   const getExportText = () => {
     if (apiMode && dossie) {
-      // In API mode, export the generated dossier
       const header = `DOSSIE DE IDENTIDADE VISUAL\n${clientName}\nGerado em ${dateStr} por ${designerName}\n${'='.repeat(50)}\n\n`;
-      return header + dossie;
+      if (dossieFormat === 'json') return header + dossieJsonToMarkdown(dossie);
+      return header + dossie; // text format
     }
     return mode === 'prompt' ? formatForClaude(formData) : formatDossieText(formData);
   };
@@ -128,7 +248,7 @@ export default function Output() {
     showFeedback('cp');
   };
 
-  const renderedDossie = apiMode && dossie ? renderMarkdown(dossie) : null;
+  const renderedDossie = apiMode && dossie && dossieFormat === 'text' && typeof dossie === 'string' ? renderMarkdown(dossie) : null;
 
   return (
     <div className="output-screen">
@@ -145,6 +265,18 @@ export default function Output() {
       <div className="out-layout">
         {/* LEFT — WHITE DOCUMENT */}
         <div className="doc-col">
+          {/* API MODE with JSON: render visual template (no doc-inner padding) */}
+          {!loading && apiMode && dossieFormat === 'json' && dossie && (
+            <DossieTemplate
+              data={dossie}
+              clientName={clientName}
+              designerName={designerName}
+              dateStr={dateStr}
+            />
+          )}
+
+          {/* Other modes: use the old doc-inner layout */}
+          {(loading || !apiMode || dossieFormat !== 'json') && (
           <div className="doc-inner">
 
             {/* Header */}
@@ -172,8 +304,8 @@ export default function Output() {
               </div>
             )}
 
-            {/* API MODE: show generated dossier */}
-            {!loading && apiMode && renderedDossie && (
+            {/* API MODE with TEXT format: show markdown rendered */}
+            {!loading && apiMode && dossieFormat === 'text' && renderedDossie && (
               <div className="dossie-generated">
                 {renderedDossie.map((block, i) => {
                   if (block.type === 'h1') return <h1 key={i} className="dg-h1">{renderInline(block.text)}</h1>;
@@ -240,6 +372,7 @@ export default function Output() {
             )}
 
           </div>
+          )}
         </div>
 
         {/* RIGHT — DARK EXPORT PANEL */}

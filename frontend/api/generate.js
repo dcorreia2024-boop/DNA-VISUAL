@@ -1,65 +1,98 @@
-// Vercel Serverless Function — geracao de dossie via OpenRouter
-// Node 18+ tem fetch nativo, sem necessidade de node-fetch
+// Vercel Serverless — geracao de dossie JSON via OpenRouter
 
-const DOSSIER_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Sua tarefa e receber as respostas brutas coletadas durante a reuniao com o cliente e transforma-las em um dossie profissional de identidade visual.
+const DOSSIER_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Analise as respostas do formulario e gere um dossie profissional de identidade visual.
 
-Voce vai receber dois tipos de dados:
-1. DADOS BASE DO CLIENTE — informacoes objetivas (nome, nicho, site, redes, concorrentes) que voce deve usar para pesquisar contexto e complementar o dossie
-2. RESPOSTAS DA REUNIAO — informacoes qualitativas coletadas pelo designer durante a reuniao com o cliente
+REGRAS CRITICAS:
+- Responda APENAS com JSON valido. Sem markdown, sem texto antes ou depois, sem backticks.
+- Linguagem pratica e acionavel
+- Se informacao nao foi fornecida, use null ou string vazia / array vazio
+- Sugira cores com codigos HEX reais e nomes descritivos
+- Sugira tipografia com nomes de fontes reais do Google Fonts
+- Diferencie o que o cliente TEM do que PRECISA SER CRIADO
+- Gere 3-4 exemplos concretos de copy ON-BRAND e OFF-BRAND
+- Liste acoes imediatas praticas no checklist
 
-Use AMBOS para gerar o dossie completo.
-
-REGRAS:
-- Linguagem pratica e acionavel — "foto de pessoa em consultorio, titulo X, botao Y" — nao "transmita autoridade"
-- Organize as informacoes de forma que qualquer designer (do junior ao senior) consiga usar sem ajuda
-- Se alguma informacao nao foi fornecida, indique claramente o que esta faltando e por que e importante
-- Nao invente informacoes — se o cliente nao respondeu algo, diga que esta pendente
-- Use codigos HEX quando mencionar cores
-- Seja especifico em tipografia — nome da fonte, peso, uso recomendado
-- Diferencie claramente o que o cliente TEM do que PRECISA SER CRIADO
-- Formate a saida em Markdown com ## para secoes e ### para subsecoes
-
-ESTRUTURA DO DOSSIE:
-
-## 1. IDENTIDADE DA MARCA
-- Posicionamento (1 frase que define a marca)
-- Missao, Visao e Valores
-- Publico-alvo (perfil detalhado: idade, genero, renda, comportamento, dores)
-- Proposta de valor unica (o que diferencia dos concorrentes)
-
-## 2. DIRETRIZES VISUAIS
-- Paleta de cores — primaria, secundaria, neutra com codigos HEX e uso recomendado
-- Tipografia — familia, hierarquia e uso (headline, body, destaque)
-- Estilo visual geral — 3 adjetivos + descricao pratica
-- Elementos graficos — padroes, texturas, formas recorrentes
-- O que NAO fazer visualmente — restricoes claras
-
-## 3. TOM DE VOZ E COMUNICACAO
-- 3 adjetivos que definem a voz da marca
-- Exemplos concretos de copy ON-BRAND vs OFF-BRAND
-- Persona de comunicacao
-- Linguagem por plataforma (Instagram, WhatsApp, LinkedIn, site)
-
-## 4. REFERENCIAS E CONCORRENTES
-Para cada concorrente: o que fazem bem, o que fazem mal, como este cliente se diferencia.
-
-## 5. MATERIAIS E ATIVOS
-- O que o cliente ja tem (logo, fotos, videos, manual)
-- O que precisa ser criado do zero — priorizado
-
-## 6. HISTORICO E APRENDIZADOS
-- O que funcionou e por que
-- O que nao funcionou
-- Motivacao atual
-
-## 7. DIRECIONAMENTO POR TIPO DE ENTREGA
-Para cada tipo relevante (LP, Ads, Carrossel, Video, KV): objetivo, formato, direcionamento visual.
-
-## 8. CHECKLIST DE ONBOARDING DO DESIGNER
-- Lista pratica do que saber antes de criar
-- Perguntas pendentes
-- Materiais a solicitar
-- O que pode comecar imediatamente`;
+RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
+{
+  "clientName": "nome do cliente",
+  "segment": "segmento",
+  "city": "cidade, estado",
+  "status": "contexto atual (rebranding, lancamento, expansao)",
+  "positioning": "1 frase de posicionamento da marca",
+  "mission": "missao em 1-2 frases",
+  "vision": "visao de 2-3 anos",
+  "values": "valores separados por quebra de linha",
+  "slogan": "slogan se tiver, null se nao",
+  "personality": ["palavra1", "palavra2", "palavra3"],
+  "targetAge": "faixa etaria",
+  "targetGender": "genero",
+  "targetClass": "classe social",
+  "targetLocation": "localizacao",
+  "targetBehavior": "comportamento e o que valorizam",
+  "targetPain": "dor principal",
+  "valueProposition": "proposta de valor em 2-3 frases",
+  "wantAssociations": ["assoc1", "assoc2", "assoc3", "assoc4", "assoc5"],
+  "avoidAssociations": ["evitar1", "evitar2", "evitar3", "evitar4", "evitar5"],
+  "colors": [
+    {"name": "Nome", "hex": "#XXXXXX", "role": "primaria", "usage": "uso"},
+    {"name": "Nome", "hex": "#XXXXXX", "role": "secundaria", "usage": "uso"},
+    {"name": "Nome", "hex": "#XXXXXX", "role": "neutra", "usage": "uso"}
+  ],
+  "typography": [
+    {"family": "Nome da Fonte", "weight": "Bold (700)", "usage": "Headlines", "status": "recomendada"},
+    {"family": "Nome da Fonte", "weight": "Regular (400)", "usage": "Corpo", "status": "recomendada"}
+  ],
+  "visualStyle": [
+    {"adjective": "Adj1", "description": "descricao pratica"},
+    {"adjective": "Adj2", "description": "descricao"},
+    {"adjective": "Adj3", "description": "descricao"}
+  ],
+  "graphicElements": ["elem1", "elem2", "elem3"],
+  "visualDontDo": ["restr1", "restr2", "restr3", "restr4"],
+  "voiceAdjectives": [
+    {"word": "Adj1", "description": "como se manifesta"},
+    {"word": "Adj2", "description": "como se manifesta"},
+    {"word": "Adj3", "description": "como se manifesta"}
+  ],
+  "communicationPersona": "persona em 2-3 frases",
+  "copyOnBrand": ["ex1", "ex2", "ex3", "ex4"],
+  "copyOffBrand": ["ex1", "ex2", "ex3", "ex4"],
+  "alwaysUseWords": ["p1", "p2", "p3", "p4", "p5"],
+  "neverUseWords": ["p1", "p2", "p3", "p4", "p5"],
+  "platformGuidelines": [
+    {"platform": "Instagram", "guideline": "direcionamento"},
+    {"platform": "WhatsApp", "guideline": "direcionamento"},
+    {"platform": "Site", "guideline": "direcionamento"}
+  ],
+  "competitors": [
+    {"name": "Nome", "handle": "@handle", "location": "cidade", "doWell": "bem", "doBad": "mal", "differentiation": "diferencial"}
+  ],
+  "visualReferences": [
+    {"name": "Marca", "description": "por que"}
+  ],
+  "existingAssets": [
+    {"name": "Ativo", "details": "detalhes"}
+  ],
+  "assetsToCreate": [
+    {"name": "Ativo", "priority": "alta", "details": "detalhes"}
+  ],
+  "whatWorked": {"description": "o que funcionou", "why": "por que"},
+  "whatFailed": {"description": "o que falhou", "why": "por que"},
+  "currentMotivation": "motivacao atual",
+  "strategicNotes": "observacoes ou null",
+  "deliveryGuidelines": [
+    {"type": "LP (Landing Page)", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"},
+    {"type": "Ads (Meta)", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"},
+    {"type": "Carrossel (Instagram)", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"},
+    {"type": "Stories", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"}
+  ],
+  "immediateActions": ["a1", "a2", "a3", "a4", "a5"],
+  "pendingItems": [
+    {"item": "item", "details": "detalhes e impacto"}
+  ],
+  "pendingQuestions": ["q1", "q2", "q3"],
+  "designerSummary": "resumo em 2-3 frases"
+}`;
 
 const BASE_KEYS = new Set([
   'clientCompany', 'clientNiche', 'clientCity', 'clientWebsite',
@@ -87,7 +120,6 @@ const QUESTIONS = {
 
 function formatFormDataForAI(formData) {
   let text = '';
-
   text += '=== DADOS BASE DO CLIENTE ===\n\n';
   const baseFields = [
     ['Empresa', formData.clientCompany],
@@ -136,8 +168,8 @@ async function callOpenRouter(userContent, systemPrompt) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
       ],
-      temperature: 0.7,
-      max_tokens: 4000
+      temperature: 0.5,
+      max_tokens: 6000
     })
   });
 
@@ -153,15 +185,26 @@ async function callOpenRouter(userContent, systemPrompt) {
   return data.choices[0].message.content;
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+function parseDossierJson(raw) {
+  // Tenta parser direto
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    // Extrai o maior bloco JSON valido
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) {
+      try { return JSON.parse(match[0]); } catch { return null; }
+    }
   }
+  return null;
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { formData } = req.body || {};
-  if (!formData) {
-    return res.status(400).json({ error: 'formData is required' });
-  }
+  if (!formData) return res.status(400).json({ error: 'formData is required' });
 
   if (!process.env.OPENROUTER_API_KEY) {
     return res.status(200).json({ mode: 'local' });
@@ -169,8 +212,14 @@ export default async function handler(req, res) {
 
   try {
     const userContent = formatFormDataForAI(formData);
-    const dossie = await callOpenRouter(userContent, DOSSIER_PROMPT);
-    return res.status(200).json({ mode: 'api', dossie });
+    const raw = await callOpenRouter(userContent, DOSSIER_PROMPT);
+    const json = parseDossierJson(raw);
+
+    if (json) {
+      return res.status(200).json({ mode: 'api', format: 'json', dossie: json });
+    }
+    // Fallback: retorna texto puro se JSON invalido
+    return res.status(200).json({ mode: 'api', format: 'text', dossie: raw });
   } catch (err) {
     console.error('OpenRouter error:', err.message);
     return res.status(200).json({ mode: 'fallback', error: err.message });
