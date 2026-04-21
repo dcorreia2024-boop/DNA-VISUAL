@@ -59,19 +59,31 @@ export default function Loading() {
 
     // Analise assincrona (API com fallback local)
     const analyze = async () => {
-      const content = sessionStorage.getItem('uploadedFileContent') || '';
+      const fileBase64 = sessionStorage.getItem('uploadedFileBase64') || '';
+      const fileName = sessionStorage.getItem('uploadedFileName') || '';
+      // Fallback para fluxo antigo (content direto)
+      const legacyContent = sessionStorage.getItem('uploadedFileContent') || '';
       let analysis = null;
+      let extractedText = '';
 
       try {
+        const body = fileBase64 && fileName
+          ? { fileBase64, fileName }
+          : { content: legacyContent };
+
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content }),
+          body: JSON.stringify(body),
           signal: abortController.current.signal
         });
         const data = await response.json();
+        if (data.extractedText) extractedText = data.extractedText;
         if (data.mode === 'api' && data.analysis) {
           analysis = normalizeApiAnalysis(data.analysis);
+        } else if (data.content) {
+          // API retornou o texto extraido mesmo em fallback — usa no simAnalysis
+          extractedText = data.content;
         }
       } catch (err) {
         if (err.name === 'AbortError') return;
@@ -80,9 +92,10 @@ export default function Loading() {
 
       if (aborted.current) return;
 
-      // Fallback local se API falhou ou nao retornou analysis
+      // Fallback local se API falhou — usa texto extraido pelo backend se tiver, senao o content legado
       if (!analysis) {
-        analysis = simAnalysis(content);
+        const textForLocal = extractedText || legacyContent;
+        analysis = simAnalysis(textForLocal);
       }
 
       // Garante que a animacao rode pelo menos 2s para nao "piscar"

@@ -2,6 +2,18 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Upload.css';
 
+// Converte ArrayBuffer para base64 sem estourar a stack em arquivos grandes
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, chunk);
+  }
+  return btoa(binary);
+}
+
 export default function Upload() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -25,13 +37,15 @@ export default function Upload() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      let content = e.target.result || '';
-      if (content.startsWith('PK') || content.includes('word/document.xml')) {
-        content = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      }
-      sessionStorage.setItem('uploadedFileContent', content);
+      const buffer = e.target.result;
+      const base64 = arrayBufferToBase64(buffer);
+      sessionStorage.setItem('uploadedFileBase64', base64);
+      // Guarda o nome do arquivo para o backend saber o tipo
+      sessionStorage.setItem('uploadedFileName', file.name);
+      // Limpa o content antigo (compat com flow anterior)
+      sessionStorage.removeItem('uploadedFileContent');
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleDragEnter = (e) => { e.preventDefault(); dragCounter.current++; setDragOver(true); };
@@ -65,7 +79,7 @@ export default function Upload() {
         >
           <div className="dz-icon" />
           <div className="dz-t">Arraste o arquivo aqui ou clique para selecionar</div>
-          <div className="dz-s">Aceita DOCX ou TXT (m&aacute;x. 10MB) &mdash; TXT recomendado</div>
+          <div className="dz-s">Aceita DOCX ou TXT (m&aacute;x. 10MB)</div>
         </div>
         <input
           type="file"

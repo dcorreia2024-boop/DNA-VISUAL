@@ -1,4 +1,7 @@
 // Vercel Serverless — analise de documento via OpenRouter
+// Aceita DOCX (base64) ou texto puro. Usa mammoth pra extrair texto de DOCX.
+
+import mammoth from 'mammoth';
 
 const ANALYZE_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Analise o conteudo do documento enviado e identifique quais informacoes do formulario de onboarding estao presentes e quais estao faltando.
 
@@ -84,38 +87,74 @@ async function callOpenRouter(userContent, systemPrompt) {
   return data.choices[0].message.content;
 }
 
+async function extractTextFromFile(fileBase64, fileName) {
+  const buffer = Buffer.from(fileBase64, 'base64');
+  const ext = (fileName || '').toLowerCase().split('.').pop();
+
+  if (ext === 'docx' || ext === 'doc') {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value;
+  }
+
+  // Texto puro (txt)
+  return buffer.toString('utf-8');
+}
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '15mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { content } = req.body || {};
-  if (!content) {
-    return res.status(400).json({ error: 'content is required' });
+  const { content, fileBase64, fileName } = req.body || {};
+
+  let text = content;
+
+  // Se recebeu arquivo em base64, extrai o texto
+  if (fileBase64 && fileName) {
+    try {
+      text = await extractTextFromFile(fileBase64, fileName);
+    } catch (err) {
+      console.error('Erro ao extrair texto do arquivo:', err.message);
+      return res.status(200).json({
+        mode: 'fallback',
+        error: `Nao foi possivel ler o arquivo: ${err.message}`,
+        content: ''
+      });
+    }
+  }
+
+  if (!text) {
+    return res.status(400).json({ error: 'content ou fileBase64 obrigatorio' });
   }
 
   if (!process.env.OPENROUTER_API_KEY) {
-    return res.status(200).json({ mode: 'local', content });
+    return res.status(200).json({ mode: 'local', content: text });
   }
 
-  // Truncate very long documents to avoid hitting token limits (keep first ~40k chars)
-  const trimmed = content.length > 40000 ? content.slice(0, 40000) + '\n\n[... documento truncado ...]' : content;
+  const trimmed = text.length > 40000 ? text.slice(0, 40000) + '\n\n[... documento truncado ...]' : text;
 
   try {
     const raw = await callOpenRouter(trimmed, ANALYZE_PROMPT);
-    // Extract JSON from response (IA sometimes wraps in markdown code blocks)
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       try {
         const parsed = JSON.parse(jsonMatch[0]);
-        return res.status(200).json({ mode: 'api', analysis: parsed });
+        return res.status(200).json({ mode: 'api', analysis: parsed, extractedText: text });
       } catch (parseErr) {
-        return res.status(200).json({ mode: 'fallback', error: 'JSON invalido da IA', raw, content });
+        return res.status(200).json({ mode: 'fallback', error: 'JSON invalido da IA', raw, content: text });
       }
     }
-    return res.status(200).json({ mode: 'fallback', raw, content });
+    return res.status(200).json({ mode: 'fallback', raw, content: text });
   } catch (err) {
     console.error('OpenRouter analyze error:', err.message);
-    return res.status(200).json({ mode: 'fallback', error: err.message, content });
+    return res.status(200).json({ mode: 'fallback', error: err.message, content: text });
   }
 }
