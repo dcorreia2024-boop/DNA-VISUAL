@@ -19,6 +19,8 @@ export default function Upload() {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [isReady, setIsReady] = useState(false);
+  const [isReading, setIsReading] = useState(false);
   const dragCounter = useRef(0);
 
   const handleFile = (file) => {
@@ -32,18 +34,34 @@ export default function Upload() {
       alert('Formato n\u00e3o suportado. Use DOCX ou TXT.');
       return;
     }
+
     setFileName(file.name);
+    setIsReady(false);
+    setIsReading(true);
     sessionStorage.setItem('uploadedFileName', file.name);
+    sessionStorage.removeItem('uploadedFileBase64');
+    sessionStorage.removeItem('uploadedFileContent');
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const buffer = e.target.result;
-      const base64 = arrayBufferToBase64(buffer);
-      sessionStorage.setItem('uploadedFileBase64', base64);
-      // Guarda o nome do arquivo para o backend saber o tipo
-      sessionStorage.setItem('uploadedFileName', file.name);
-      // Limpa o content antigo (compat com flow anterior)
-      sessionStorage.removeItem('uploadedFileContent');
+      try {
+        const buffer = e.target.result;
+        const base64 = arrayBufferToBase64(buffer);
+        sessionStorage.setItem('uploadedFileBase64', base64);
+        console.log('[Upload] Arquivo lido:', file.name, '| base64 chars:', base64.length);
+        setIsReady(true);
+      } catch (err) {
+        console.error('[Upload] Erro ao ler arquivo:', err);
+        alert('Erro ao processar o arquivo: ' + err.message);
+        setFileName('');
+      }
+      setIsReading(false);
+    };
+    reader.onerror = () => {
+      console.error('[Upload] FileReader error');
+      alert('Erro ao ler o arquivo.');
+      setIsReading(false);
+      setFileName('');
     };
     reader.readAsArrayBuffer(file);
   };
@@ -59,9 +77,16 @@ export default function Upload() {
   };
 
   const handleAnalyze = () => {
-    if (!fileName) return;
+    if (!isReady) return;
+    const base64 = sessionStorage.getItem('uploadedFileBase64');
+    if (!base64) {
+      alert('O arquivo ainda n\u00e3o foi processado. Tente novamente.');
+      return;
+    }
     navigate('/loading');
   };
+
+  const buttonLabel = isReading ? 'PROCESSANDO ARQUIVO...' : 'ANALISAR DOCUMENTO';
 
   return (
     <div className="up-screen">
@@ -89,9 +114,16 @@ export default function Upload() {
         />
         <div className={`fi${fileName ? ' on' : ''}`}>
           <span>Arquivo:</span><span className="fn">{fileName}</span>
+          {isReading && <span style={{ color: 'var(--red)', fontSize: 11 }}>&middot; lendo...</span>}
+          {isReady && <span style={{ color: '#27AE60', fontSize: 11 }}>&middot; pronto</span>}
         </div>
-        <button className={`btn btn-r ub${fileName ? ' on' : ''}`} onClick={handleAnalyze}>
-          ANALISAR DOCUMENTO
+        <button
+          className={`btn btn-r ub${fileName && isReady ? ' on' : ''}`}
+          onClick={handleAnalyze}
+          disabled={!isReady}
+          style={{ opacity: !isReady && fileName ? 0.5 : 1 }}
+        >
+          {buttonLabel}
         </button>
       </div>
     </div>

@@ -66,10 +66,23 @@ export default function Loading() {
       let analysis = null;
       let extractedText = '';
 
+      console.log('[Loading] Iniciando analise:', {
+        hasBase64: !!fileBase64,
+        base64Length: fileBase64.length,
+        fileName,
+        hasLegacyContent: !!legacyContent
+      });
+
       try {
         const body = fileBase64 && fileName
           ? { fileBase64, fileName }
           : { content: legacyContent };
+
+        console.log('[Loading] Enviando request:', {
+          endpoint: '/api/analyze',
+          bodyKeys: Object.keys(body),
+          payloadSize: JSON.stringify(body).length
+        });
 
         const response = await fetch('/api/analyze', {
           method: 'POST',
@@ -77,20 +90,36 @@ export default function Loading() {
           body: JSON.stringify(body),
           signal: abortController.current.signal
         });
+
+        console.log('[Loading] Response recebida:', response.status, response.statusText);
+
         const data = await response.json();
+        console.log('[Loading] Data:', {
+          mode: data.mode,
+          hasAnalysis: !!data.analysis,
+          hasExtractedText: !!data.extractedText,
+          extractedLength: data.extractedText?.length,
+          error: data.error
+        });
+
         if (data.extractedText) extractedText = data.extractedText;
         if (data.mode === 'api' && data.analysis) {
           analysis = normalizeApiAnalysis(data.analysis);
+          const foundCount = Object.values(data.analysis).filter(v => v && v.found).length;
+          console.log('[Loading] Analysis: ' + foundCount + ' campos encontrados pela IA');
         } else if (data.content) {
           // API retornou o texto extraido mesmo em fallback — usa no simAnalysis
           extractedText = data.content;
         }
       } catch (err) {
-        if (err.name === 'AbortError') return;
-        console.log('API indispon\u00edvel, usando an\u00e1lise local:', err.message);
+        if (err.name === 'AbortError') {
+          console.log('[Loading] Request abortado');
+          return;
+        }
+        console.error('[Loading] API erro:', err.message);
       }
 
-      if (aborted.current) return;
+      if (aborted.current) { console.log('[Loading] Cancelado pelo usuario'); return; }
 
       // Fallback local se API falhou — usa texto extraido pelo backend se tiver, senao o content legado
       if (!analysis) {
