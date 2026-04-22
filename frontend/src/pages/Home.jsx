@@ -12,6 +12,8 @@ export default function Home() {
     sessionStorage.removeItem('dna_temp_output_data');
     sessionStorage.removeItem('extractedDocumentText');
     sessionStorage.removeItem('analysisApiUnavailable');
+    sessionStorage.removeItem('uploadedFiles');
+    sessionStorage.removeItem('uploadedFilesCount');
     sessionStorage.removeItem('uploadedFileBase64');
     sessionStorage.removeItem('uploadedFileName');
     sessionStorage.removeItem('uploadedFileContent');
@@ -58,7 +60,7 @@ export default function Home() {
         <div className="metrics-bar">
           <div className="met glass"><div className="met-n">0 min</div><div className="met-l">de busca manual</div></div>
           <div className="met-s" />
-          <div className="met glass"><div className="met-n">8 se&ccedil;&otilde;es</div><div className="met-l">de identidade visual</div></div>
+          <div className="met glass"><div className="met-n">6 se&ccedil;&otilde;es</div><div className="met-l">de identidade visual</div></div>
           <div className="met-s" />
           <div className="met glass"><div className="met-n">1 clique</div><div className="met-l">para gerar o dossi&ecirc;</div></div>
         </div>

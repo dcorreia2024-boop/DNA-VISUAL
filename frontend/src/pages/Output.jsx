@@ -300,6 +300,33 @@ export default function Output() {
     showFeedback('cp');
   };
 
+  const handleGeneratePDF = async () => {
+    const element = document.getElementById('dossie-content');
+    if (!element) return;
+
+    const safeName = (outputData.clientCompany || clientName || 'cliente')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `dossie-${safeName || 'cliente'}.pdf`,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    showFeedback('pdf');
+    // Dynamic import — html2pdf e ~350KB, so carrega se clicar
+    const { default: html2pdf } = await import('html2pdf.js');
+    html2pdf().set(opt).from(element).save();
+  };
+
   const renderedDossie = apiMode && dossie && dossieFormat === 'text' && typeof dossie === 'string' ? renderMarkdown(dossie) : null;
 
   return (
@@ -317,6 +344,7 @@ export default function Output() {
       <div className="out-layout">
         {/* LEFT — WHITE DOCUMENT */}
         <div className="doc-col">
+         <div id="dossie-content">
           {/* API MODE with JSON: render visual template (no doc-inner padding) */}
           {!loading && apiMode && dossieFormat === 'json' && dossie && typeof dossie === 'object' && (
             <ErrorBoundary>
@@ -443,6 +471,7 @@ export default function Output() {
 
           </div>
           )}
+         </div>{/* /#dossie-content */}
         </div>
 
         {/* RIGHT — DARK EXPORT PANEL */}
@@ -506,15 +535,20 @@ export default function Output() {
               )}
             </div>
 
-            {/* PDF — disabled */}
-            <div className="e-card off">
+            {/* PDF — ativo */}
+            <div className={`e-card ${loading ? 'off' : ''}`} onClick={!loading ? handleGeneratePDF : undefined}>
               <div className="e-card-top">
                 <div className="e-card-icon">&loz;</div>
-                <span className="e-tag soon">Em breve</span>
               </div>
               <div className="e-card-title">Gerar PDF</div>
-              <div className="e-card-desc">Dossi&ecirc; formatado, pronto pra apresentar.</div>
-              <div className="e-card-action" style={{ opacity: 0.3 }}>Em breve <span className="arrow">&rarr;</span></div>
+              <div className="e-card-desc">Exporta o dossi&ecirc; como PDF pronto pra apresentar ao time ou ao cliente.</div>
+              <div className="e-card-action">Exportar PDF <span className="arrow">&rarr;</span></div>
+              {feedback === 'pdf' && (
+                <div className="e-fb show">
+                  <div className="e-fb-check">&check;</div>
+                  <div className="e-fb-text">PDF gerado!</div>
+                </div>
+              )}
             </div>
           </div>
 

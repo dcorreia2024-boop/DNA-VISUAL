@@ -161,6 +161,16 @@
 }
 
 /* ── Nav badge (API mode) ── */
+/* Page breaks para html2pdf */
+.doc-section, .dt-sec, .dt-concorrente, .dt-entrega { page-break-inside: avoid }
+.dt-capa { page-break-after: avoid }
+
+@media print {
+  .export-col { display: none !important }
+  .out-nav { display: none !important }
+  .doc-col { width: 100% !important; margin: 0 !important }
+}
+
 .out-nav-badge {
   background: rgba(39, 174, 96, 0.15);
   color: #27AE60;

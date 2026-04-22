@@ -15,3 +15,95 @@
 .ub { display: none; width: 100% }
 .ub.on { display: flex; justify-content: center }
 .up-screen input[type="file"] { display: none }
+
+/* ── Multi-file list ── */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  width: 100%;
+  max-width: 560px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  transition: border-color 0.2s;
+}
+.file-item:hover { border-color: var(--border-hover) }
+
+.file-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 11px;
+  letter-spacing: 1px;
+  background: var(--red);
+  color: #fff;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.file-size {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.file-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 10px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.file-remove:hover { color: var(--red) }
+
+.btn-add-more {
+  background: none;
+  border: 1px dashed var(--border-default);
+  color: var(--text-muted);
+  padding: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 560px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+.btn-add-more:hover {
+  border-color: var(--red);
+  color: var(--red);
+}

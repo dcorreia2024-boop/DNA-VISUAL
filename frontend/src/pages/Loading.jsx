@@ -51,6 +51,7 @@ export default function Loading() {
     }, 60000);
 
     const analyzeDocument = async () => {
+      const filesJson = sessionStorage.getItem('uploadedFiles') || '';
       const fileBase64 = sessionStorage.getItem('uploadedFileBase64') || '';
       const fileName = sessionStorage.getItem('uploadedFileName') || '';
       const legacyContent = sessionStorage.getItem('uploadedFileContent') || '';
@@ -60,9 +61,20 @@ export default function Loading() {
       let apiUnavailable = false;
 
       try {
-        const body = fileBase64 && fileName
-          ? { fileBase64, fileName }
-          : { content: legacyContent };
+        let body;
+        if (filesJson) {
+          // Novo formato: array de arquivos
+          try {
+            const files = JSON.parse(filesJson);
+            body = { files };
+          } catch {
+            body = { fileBase64, fileName };
+          }
+        } else if (fileBase64 && fileName) {
+          body = { fileBase64, fileName };
+        } else {
+          body = { content: legacyContent };
+        }
 
         const response = await fetch('/api/analyze', {
           method: 'POST',
