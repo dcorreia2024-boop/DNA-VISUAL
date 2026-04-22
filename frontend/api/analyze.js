@@ -2,7 +2,9 @@
 // Suporta multiplos arquivos (TXT/DOCX/PDF) em array base64
 
 import mammoth from 'mammoth';
-import pdfParse from 'pdf-parse';
+// Importa direto do lib/pdf-parse.js para evitar bug do pdf-parse
+// que tenta ler um PDF de teste ao carregar o index.js (quebra em serverless)
+import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
 const ANALYZE_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Analise o conteudo dos documentos enviados e identifique quais informacoes do formulario de onboarding estao presentes e quais estao faltando.
 

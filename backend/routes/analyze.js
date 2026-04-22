@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const mammoth = require('mammoth');
-const pdfParse = require('pdf-parse');
+// Importa direto do lib/pdf-parse.js para evitar bug do pdf-parse
+// que tenta ler um PDF de teste ao carregar o index.js
+const pdfParse = require('pdf-parse/lib/pdf-parse.js');
 const { callOpenRouter } = require('../services/openrouter');
 const { ANALYZE_PROMPT } = require('../prompts/analyze-prompt');
 
