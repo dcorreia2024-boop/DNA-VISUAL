@@ -2,10 +2,7 @@
 // Suporta multiplos arquivos (TXT/DOCX/PDF) em array base64
 
 import mammoth from 'mammoth';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-// pdf-parse e carregado lazy (so quando recebe PDF) para evitar o bug
-// do index.js que le um arquivo de teste ao ser importado em serverless
+import { PDFParse } from 'pdf-parse';
 
 const ANALYZE_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Analise o conteudo dos documentos enviados e identifique quais informacoes do formulario de onboarding estao presentes e quais estao faltando.
 
@@ -97,10 +94,10 @@ async function extractTextFromFile(fileBase64, fileName) {
   const ext = (fileName || '').toLowerCase().split('.').pop();
 
   if (ext === 'pdf') {
-    // Lazy require pra evitar que pdf-parse/index.js rode em boot (tenta ler arquivo de teste)
-    const pdfParse = require('pdf-parse/lib/pdf-parse.js');
-    const pdfData = await pdfParse(buffer);
-    return pdfData.text;
+    // pdf-parse v2 API: new PDFParse({ data }).getText()
+    const parser = new PDFParse({ data: buffer });
+    const result = await parser.getText();
+    return result.text;
   }
   if (ext === 'docx' || ext === 'doc') {
     const result = await mammoth.extractRawText({ buffer });
