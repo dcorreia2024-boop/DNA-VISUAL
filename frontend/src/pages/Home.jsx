@@ -1,8 +1,21 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import './Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
+
+  // Limpa dados temporarios de upload/analise ao voltar pra Home
+  // (nao impacta formData do FormContext — esse e persistido no localStorage)
+  useEffect(() => {
+    sessionStorage.removeItem('dna_analysis_result');
+    sessionStorage.removeItem('dna_temp_output_data');
+    sessionStorage.removeItem('extractedDocumentText');
+    sessionStorage.removeItem('analysisApiUnavailable');
+    sessionStorage.removeItem('uploadedFileBase64');
+    sessionStorage.removeItem('uploadedFileName');
+    sessionStorage.removeItem('uploadedFileContent');
+  }, []);
 
   return (
     <div className="home">

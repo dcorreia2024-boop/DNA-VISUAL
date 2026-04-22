@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
 import { formatDossieText, formatForClaude, copyToClipboard } from '../services/clipboard';
@@ -169,9 +169,22 @@ function renderInline(text) {
 
 export default function Output() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { formData } = useForm();
   const [mode, setMode] = useState('prompt');
   const [feedback, setFeedback] = useState(null);
+
+  // Se veio do fluxo de analise, usa dados temporarios do sessionStorage
+  // (nao mistura com FormContext para nao contaminar o form ao vivo)
+  const fromAnalysis = location.state?.fromAnalysis;
+  const outputData = useMemo(() => {
+    if (fromAnalysis) {
+      try {
+        return JSON.parse(sessionStorage.getItem('dna_temp_output_data') || '{}');
+      } catch { return {}; }
+    }
+    return formData;
+  }, [fromAnalysis, formData]);
 
   // API integration state
   const [dossie, setDossie] = useState(null);
@@ -180,8 +193,8 @@ export default function Output() {
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
 
-  const clientName = formData.clientName || 'Cliente';
-  const designerName = formData.designerName || 'Designer';
+  const clientName = outputData.clientName || 'Cliente';
+  const designerName = outputData.designerName || 'Designer';
   const dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const baseSection = SECTIONS.find(s => s.block === 'dados-base');
@@ -202,7 +215,7 @@ export default function Output() {
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ formData }),
+          body: JSON.stringify({ formData: outputData }),
           signal: controller.signal
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -260,7 +273,7 @@ export default function Output() {
       if (dossieFormat === 'json') return header + dossieJsonToMarkdown(dossie);
       return header + dossie; // text format
     }
-    return mode === 'prompt' ? formatForClaude(formData) : formatDossieText(formData);
+    return mode === 'prompt' ? formatForClaude(outputData) : formatDossieText(outputData);
   };
 
   const handleDownload = () => {
@@ -269,7 +282,7 @@ export default function Output() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const safeName = (formData.clientCompany || clientName || 'cliente')
+    const safeName = (outputData.clientCompany || clientName || 'cliente')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
@@ -293,7 +306,7 @@ export default function Output() {
     <div className="output-screen">
       {/* NAV */}
       <nav className="out-nav">
-        <button className="out-nav-back" onClick={() => navigate('/form')}>&larr; Voltar e editar</button>
+        <button className="out-nav-back" onClick={() => navigate(fromAnalysis ? '/result' : '/form')}>&larr; Voltar e editar</button>
         <div className="out-nav-brand">
           <div className="out-nav-v4">V4</div>
           <span>DNA Visual</span>
@@ -390,8 +403,8 @@ export default function Output() {
                       {baseSection.fields.map(f => (
                         <div className="client-item" key={f.key}>
                           <span className="client-label">{f.label.split('(')[0].split('\u2014')[0].trim()}</span>
-                          <span className={`client-value ${(formData[f.key] || '').trim() ? '' : 'empty'}`}>
-                            {(formData[f.key] || '').trim() || '\u2014'}
+                          <span className={`client-value ${(outputData[f.key] || '').trim() ? '' : 'empty'}`}>
+                            {(outputData[f.key] || '').trim() || '\u2014'}
                           </span>
                         </div>
                       ))}
@@ -411,7 +424,7 @@ export default function Output() {
                     </div>
                     <div className="doc-fields">
                       {sec.fields.map(f => {
-                        const val = (formData[f.key] || '').trim();
+                        const val = (outputData[f.key] || '').trim();
                         return (
                           <div className="doc-field" key={f.key}>
                             <div className="doc-q">{f.label.split('?')[0].split('\u2014')[0].trim()}</div>

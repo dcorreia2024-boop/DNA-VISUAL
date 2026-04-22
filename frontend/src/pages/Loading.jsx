@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
 import './Loading.css';
 
@@ -17,7 +16,6 @@ function emptyAnalysis() {
 
 export default function Loading() {
   const navigate = useNavigate();
-  const { dispatch } = useForm();
   const [visibleItems, setVisibleItems] = useState([]);
   const [showCancel, setShowCancel] = useState(false);
   const [statusText, setStatusText] = useState('Analisando o documento...');
@@ -99,11 +97,12 @@ export default function Loading() {
         analysis = emptyAnalysis();
       }
 
-      // Guarda metadados para o Result mostrar banner apropriado
+      // Guarda em sessionStorage (NAO no FormContext — analise fica isolada
+      // ate o designer decidir explicitamente se quer mesclar com o form)
+      sessionStorage.setItem('dna_analysis_result', JSON.stringify(analysis));
       sessionStorage.setItem('analysisApiUnavailable', apiUnavailable ? '1' : '0');
       if (extractedText) sessionStorage.setItem('extractedDocumentText', extractedText);
 
-      dispatch({ type: 'LOAD_ANALYSIS', payload: analysis });
       navigate('/result', { replace: true });
     };
 
@@ -118,7 +117,7 @@ export default function Loading() {
       clearTimeout(statusTimer2);
       clearTimeout(slowTimer);
     };
-  }, [dispatch, navigate]);
+  }, [navigate]);
 
   const handleCancel = () => {
     aborted.current = true;

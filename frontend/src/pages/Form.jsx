@@ -131,7 +131,13 @@ export default function Form() {
           <div className="fsb-pl"><span>Progresso</span><span>{pct}%</span></div>
           <div className="fsb-pb"><div className="fsb-pf" style={{ width: `${pct}%` }} /></div>
           <button className="fsb-reset" onClick={() => {
-            if (confirm('Limpar todos os dados e come\u00e7ar um novo cliente?')) resetForm();
+            if (confirm('Limpar todos os dados e come\u00e7ar um novo cliente?')) {
+              resetForm();
+              sessionStorage.removeItem('dna_analysis_result');
+              sessionStorage.removeItem('dna_temp_output_data');
+              sessionStorage.removeItem('extractedDocumentText');
+              sessionStorage.removeItem('analysisApiUnavailable');
+            }
           }}>Novo Cliente</button>
           <div className="theme-toggle" onClick={toggleTheme}>
             <div className={`theme-toggle-track ${theme === 'light' ? 'active' : ''}`}>

@@ -4,22 +4,29 @@ import { useForm } from '../context/FormContext';
 import SECTIONS from '../data/sections';
 import './Result.css';
 
-// analysisData agora eh flat: { fieldKey: { found, content } }
+// analysisData vem do sessionStorage em formato flat: { fieldKey: { found, content } }
 function isFound(analysisData, fieldKey) {
-  const item = analysisData[fieldKey];
+  const item = analysisData?.[fieldKey];
   return !!(item && item.found && (item.content || '').trim());
 }
 
 function getContent(analysisData, fieldKey) {
-  const item = analysisData[fieldKey];
+  const item = analysisData?.[fieldKey];
   return item && item.found ? (item.content || '').trim() : '';
 }
 
 export default function Result() {
   const navigate = useNavigate();
-  const { analysisData, formData, updateField } = useForm();
+  const { updateField } = useForm();
   const [manualData, setManualData] = useState({});
   const [clientName, setClientName] = useState('');
+
+  // Le analise direto do sessionStorage — NAO do FormContext
+  const [analysisData] = useState(() => {
+    const saved = sessionStorage.getItem('dna_analysis_result');
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const apiUnavailable = sessionStorage.getItem('analysisApiUnavailable') === '1';
   const extractedText = sessionStorage.getItem('extractedDocumentText') || '';
 
@@ -27,27 +34,41 @@ export default function Result() {
     setManualData((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const mergeAll = useCallback(() => {
-    SECTIONS.forEach((sec) => {
-      sec.fields.forEach((f) => {
+  // "GERAR DOSSIE COM O QUE TENHO" — NAO toca no FormContext.
+  // Monta payload temporario e passa via sessionStorage + route state.
+  const handleGenerate = () => {
+    const tempData = {};
+    SECTIONS.forEach(sec => {
+      sec.fields.forEach(f => {
+        const manual = (manualData[f.key] || '').trim();
+        const found = getContent(analysisData, f.key);
+        if (manual) tempData[f.key] = manual;
+        else if (found) tempData[f.key] = found;
+      });
+    });
+    tempData.clientName = clientName.trim() || 'Cliente (via an\u00e1lise)';
+    tempData.designerName = 'Designer';
+
+    sessionStorage.setItem('dna_temp_output_data', JSON.stringify(tempData));
+    navigate('/output', { state: { fromAnalysis: true } });
+  };
+
+  // "COMPLETAR O QUE FALTA" — AQUI sim faz merge no FormContext
+  const handleComplete = () => {
+    SECTIONS.forEach(sec => {
+      sec.fields.forEach(f => {
         const manual = (manualData[f.key] || '').trim();
         const found = getContent(analysisData, f.key);
         if (manual) updateField(f.key, manual);
         else if (found) updateField(f.key, found);
       });
     });
-  }, [analysisData, manualData, updateField]);
-
-  const handleGenerate = () => {
-    mergeAll();
     if (clientName.trim()) updateField('clientName', clientName.trim());
-    else if (!formData.clientName) updateField('clientName', 'Cliente (via an\u00e1lise)');
-    requestAnimationFrame(() => navigate('/output'));
-  };
-
-  const handleComplete = () => {
-    mergeAll();
-    if (clientName.trim()) updateField('clientName', clientName.trim());
+    // Limpa os dados temporarios da analise — agora estao no formData
+    sessionStorage.removeItem('dna_analysis_result');
+    sessionStorage.removeItem('dna_temp_output_data');
+    sessionStorage.removeItem('extractedDocumentText');
+    sessionStorage.removeItem('analysisApiUnavailable');
     requestAnimationFrame(() => navigate('/form'));
   };
 
