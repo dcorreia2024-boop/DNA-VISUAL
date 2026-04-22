@@ -509,7 +509,7 @@ export default function Output() {
               <div className="e-card-action">Baixar .md <span className="arrow">&rarr;</span></div>
               {feedback === 'dl' && (
                 <div className="e-fb show">
-                  <div className="e-fb-check">&check;</div>
+                  <div className="e-fb-check">&#10003;</div>
                   <div className="e-fb-text">Baixado!</div>
                 </div>
               )}
@@ -529,7 +529,7 @@ export default function Output() {
               <div className="e-card-action">Copiar <span className="arrow">&rarr;</span></div>
               {feedback === 'cp' && (
                 <div className="e-fb show">
-                  <div className="e-fb-check">&check;</div>
+                  <div className="e-fb-check">&#10003;</div>
                   <div className="e-fb-text">Copiado!</div>
                 </div>
               )}
@@ -538,14 +538,14 @@ export default function Output() {
             {/* PDF — ativo */}
             <div className={`e-card ${loading ? 'off' : ''}`} onClick={!loading ? handleGeneratePDF : undefined}>
               <div className="e-card-top">
-                <div className="e-card-icon">&loz;</div>
+                <div className="e-card-icon">&#9674;</div>
               </div>
               <div className="e-card-title">Gerar PDF</div>
               <div className="e-card-desc">Exporta o dossi&ecirc; como PDF pronto pra apresentar ao time ou ao cliente.</div>
               <div className="e-card-action">Exportar PDF <span className="arrow">&rarr;</span></div>
               {feedback === 'pdf' && (
                 <div className="e-fb show">
-                  <div className="e-fb-check">&check;</div>
+                  <div className="e-fb-check">&#10003;</div>
                   <div className="e-fb-text">PDF gerado!</div>
                 </div>
               )}
