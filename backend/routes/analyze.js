@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const mammoth = require('mammoth');
-const { PDFParse } = require('pdf-parse');
+// Importa direto do lib pra evitar o debug block do index.js
+const pdfParse = require('pdf-parse/lib/pdf-parse.js');
 const { callOpenRouter } = require('../services/openrouter');
 const { ANALYZE_PROMPT } = require('../prompts/analyze-prompt');
 
@@ -10,8 +11,7 @@ async function extractTextFromFile(fileBase64, fileName) {
   const ext = (fileName || '').toLowerCase().split('.').pop();
 
   if (ext === 'pdf') {
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
+    const result = await pdfParse(buffer);
     return result.text;
   }
   if (ext === 'docx' || ext === 'doc') {
