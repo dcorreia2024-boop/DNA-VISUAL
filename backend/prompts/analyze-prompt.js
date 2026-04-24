@@ -34,6 +34,8 @@ DADOS BASE:
 - clientWebsite: Site/URL. So se for mencionado explicitamente.
 - clientInstagram: Instagram (@). So se mencionado.
 - clientOtherSocial: Outras redes. Inclua TODAS que forem mencionadas (Meta Ads, LinkedIn, YouTube, TikTok, etc) — mesmo em contexto de "canais que usamos"
+  ATENCAO — diferencie entre canais que o cliente USA ATIVAMENTE e contas/plataformas que apenas EXISTEM ou foram mencionadas em contexto de acesso/diagnostico. Se alguem diz "Google Ads nao foi utilizado" ou "temos conta mas nao usamos", NAO liste como canal ativo.
+  Formato: liste cada rede com status. Ex: "Instagram (ativo), Facebook (ativo), LinkedIn (conta existe, pouco uso), Google Ads (nao utilizado)"
 - competitor1: Concorrente 1 — nome + contexto. Se mencionaram varios, pegue os 3 mais relevantes.
 - competitor2: Concorrente 2
 - competitor3: Concorrente 3
@@ -41,11 +43,13 @@ DADOS BASE:
 REUNIAO — O NEGOCIO E O PUBLICO:
 - businessDescription: O que a empresa faz, pra quem, qual problema resolve. SINTETIZE de tudo que foi dito ao longo da call, nao so de uma resposta. Inclua modelo de negocio (B2B, B2C, ambos), como funciona o servico/produto, diferencial.
 - idealClient: Cliente ideal. JUNTE todas as mencoes de publico ao longo da call: idade, genero, classe, renda, comportamento, localizacao, dores. Mesmo que estejam em momentos diferentes da conversa.
+  Se o cliente tem MAIS DE UM publico-alvo (ex: B2C pessoa fisica + B2B empresas/parceiros), LISTE AMBOS separados. Formato: "Publico B2C: [descricao]. Publico B2B: [descricao]." Muitas empresas tem dois publicos distintos — o consumidor final E parceiros/revendedores/clinicas que indicam. Ambos devem ser capturados.
 - motivation: O que motivou buscar esse trabalho. Pode ser multiplos motivos mencionados em momentos diferentes.
 
 REUNIAO — PERSONALIDADE DA MARCA:
 - brandPersonality: Personalidade da marca em 3 palavras + como fala. Pode estar em respostas diretas OU em como o cliente descreve o tom ("rapido, facil, sem burocracia" = personalidade)
 - brandFeeling: O que quer transmitir + o que NAO quer ser associado. SEPARE claramente. Inclua exemplos negativos mencionados ("nao quero parecer Hapvida")
+  Preste atencao quando alguem TRADUZ ou CONFIRMA um conceito. Se o designer diz "podemos posicionar como autoridade?" e o cliente responde "Exatamente, traduziu perfeitamente" — a palavra "autoridade" e uma KEYWORD DE POSICIONAMENTO confirmada. Capture essas confirmacoes. Elas sao ouro pro designer. Formato: inclua no final "Palavra-chave confirmada: [termo]"
 - missionValues: Missao, visao, valores, slogan. Pode nao ter sido perguntado formalmente — o cliente pode ter dito indiretamente ("nosso objetivo e..." "eu acredito que...")
 - futureVision: Onde quer estar em 2-3 anos. Qualquer mencao de crescimento, expansao, metas futuras.
 
@@ -56,14 +60,33 @@ REUNIAO — IDENTIDADE VISUAL E ESTILO:
 
 REUNIAO — MATERIAIS E HISTORICO:
 - existingMaterials: O que ja tem. VASCULHE toda a call: fotos, videos, drive, manual, material impresso, TVs, outdoor, PDVs, provas sociais, cases. Inclua ONDE estao ("drive", "com a agencia", "no celular").
-- missingMaterials: O que precisa criar. Pode estar explicito ou implicito ("precisamos de CRM" -> material/ferramenta a criar).
+- missingMaterials: O que precisa criar. Este campo e sobre MATERIAIS VISUAIS E DE DESIGN — logo, manual de marca, templates, videos, fotos, apresentacoes, cartao de visita. NAO inclua necessidades operacionais como CRM, ferramentas de gestao, processos comerciais. Se o cliente menciona que precisa de CRM, isso vai no campo freeNotes como nota operacional, NAO aqui. Foque em: o que o DESIGNER precisa criar.
 - pastResults: Campanhas/materiais que funcionaram + que falharam. Inclua CONTEXTO (por que funcionou, por que falhou). Pode estar espalhado em diferentes partes da call.
+  Preste atencao em QUALQUER mencao de conteudo que performou, mesmo que breve. Se alguem diz "teve um video de um cliente que performou bem" ou "os reels explodiram" — isso e resultado que funcionou. Capture MESMO SE dito por outra pessoa (agencia, equipe). Inclua provas sociais mencionadas (videos de clientes, prints, depoimentos). Se o cliente diz que trabalho anterior "nao tinha nada a ver" — isso e resultado que FALHOU.
+  Formato: "Funcionou: [o que, por que]. Falhou: [o que, por que]. Provas sociais existentes: [listar]."
 
 REUNIAO — TOM DE COMUNICACAO:
 - voiceTone: Como a marca se comunica. Inclua: formal/informal, uso de humor, emojis, jargao tecnico, palavras que usa/evita. Pode estar em respostas diretas OU em como o cliente se expressa durante a call (tom dele = tom da marca, muitas vezes).
+  Va ALEM de "formal ou informal". Capture NUANCES especificas:
+  - Se o cliente diz que o publico "nao tem educacao financeira alta" -> comunicacao precisa ser CLARA e SIMPLES, sem jargao
+  - Se o cliente enfatiza transparencia -> "sem pegadinhas", "sem letras miudas" e diretriz de tom
+  - Capture exemplos concretos de como o cliente fala naturalmente durante a call — o tom dele muitas vezes E o tom da marca
+  - Diferencie tom por canal se mencionado (WhatsApp vs Instagram vs site)
+  Formato: "Tom geral: [descricao]. Diretriz principal: [ex: clareza absoluta para publico com baixa educacao financeira]. Palavras-chave: [termos que o cliente usa naturalmente]."
 
 REUNIAO — OBSERVACOES LIVRES:
 - freeNotes: TUDO que e importante e nao se encaixa nos campos acima. Dinamicas internas (board, socios, agencia atual), restricoes, prazos, orcamento, consideracoes estrategicas, benchmarks inusitados, informacoes sobre a equipe, processos internos.
+  OBRIGATORIO capturar dados operacionais e financeiros mencionados, mesmo que nao parecam "de design". O designer precisa de contexto pra criar materiais adequados. Inclua se mencionados:
+  - Faturamento atual e meta
+  - Ticket medio
+  - Margem de lucro
+  - Tamanho da equipe comercial
+  - Ferramentas usadas (WhatsApp, CRM, etc)
+  - Benchmarks aspiracionais (empresas que admira e POR QUE)
+  - Anti-benchmarks (empresas que NAO quer parecer e POR QUE)
+  - Dinamica interna (board, socios, agencia atual, quem aprova o que)
+  - Restricoes ou prazos mencionados
+  Formato: organize em topicos curtos, um por linha.
 
 FORMATO DE RESPOSTA:
 Responda APENAS com JSON valido. Sem texto antes, sem texto depois, sem backticks de markdown.
