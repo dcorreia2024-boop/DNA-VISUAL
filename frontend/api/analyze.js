@@ -6,52 +6,108 @@ import mammoth from 'mammoth';
 // de teste ao boot (quebra em serverless)
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
-const ANALYZE_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Analise o conteudo dos documentos enviados e identifique quais informacoes do formulario de onboarding estao presentes e quais estao faltando.
+const ANALYZE_PROMPT = `Voce e um analista de onboarding visual altamente experiente da V4 Ruston & Co. Sua tarefa e ler documentos de clientes — que podem ser transcricoes brutas de calls, briefings, anotacoes ou documentos formais — e EXTRAIR todas as informacoes relevantes para montar o dossie de identidade visual.
 
-Responda APENAS com JSON valido, sem markdown, sem texto adicional, no formato:
-{
-  "clientCompany": { "found": true, "content": "texto extraido ou vazio" },
-  "clientNiche": { "found": false, "content": "" },
-  ...
-}
+CONTEXTO IMPORTANTE:
+- O documento pode ser uma TRANSCRICAO DE CALL. Transcricoes sao BAGUNCADAS: tem erros de transcricao automatica, interrupcoes, conversas paralelas, piadas, silencios, gente falando por cima, tangentes que voltam ao assunto minutos depois.
+- A informacao NAO esta organizada por secoes. Uma resposta sobre publico-alvo pode aparecer no meio de uma conversa sobre concorrentes. Uma cor mencionada pode estar numa frase sobre o logo, 20 minutos antes de falar de estilo visual.
+- NUNCA presuma que informacao nao existe so porque nao esta numa secao obvia. VASCULHE o documento inteiro. RELEIA mentalmente. CONECTE informacoes espalhadas.
+- Preste atencao especial em quem esta falando. O CLIENTE e quem da as respostas. O designer/gestor e quem pergunta. Identifique os nomes e papeis.
 
-OS CAMPOS SAO:
+COMO ANALISAR:
+
+1. LEIA O DOCUMENTO INTEIRO antes de comecar a extrair. Entenda o contexto geral: quem e o cliente, o que faz, o que quer.
+
+2. Para CADA campo abaixo, vasculhe o documento inteiro procurando:
+   - Mencoes diretas ("nosso nicho e saude")
+   - Mencoes indiretas ("a gente financia procedimentos esteticos" -> nicho: fintech de saude/estetica)
+   - Informacoes implicitas ("atendemos em 235 cidades" -> atuacao nacional)
+   - Informacoes fragmentadas (o cliente fala metade agora, complementa 10 minutos depois)
+   - Informacoes ditas por OUTROS participantes sobre o cliente (agencia atual, equipe, etc)
+
+3. COMBINE informacoes espalhadas. Se em um momento o cliente diz "nosso publico e mulher" e 15 minutos depois diz "35 a 55 anos, classe B e C", JUNTE tudo no campo de publico-alvo.
+
+4. INTERPRETE erros de transcricao. "Acredite Saint-Germa" provavelmente e "Credit Saint-Germain". "Only Funs" e "OnlyFans". "rap vida" e "Hapvida". Use contexto pra corrigir.
+
+5. DIFERENCIE entre o que o cliente TEM e o que ele QUER. "Nosso azul escuro atual" e identidade existente. "Quero algo mais popular" e estilo desejado.
+
+6. Se uma informacao NAO existe no documento, marque found: false. NAO invente. Mas antes de marcar false, releia mentalmente se nao esta escondida em alguma fala tangencial.
+
+CAMPOS A EXTRAIR:
 
 DADOS BASE:
-- clientCompany: Nome da empresa ou marca
-- clientNiche: Nicho ou segmento de atuacao
-- clientCity: Cidade e estado de atuacao
-- clientWebsite: Site do cliente (URL)
-- clientInstagram: Instagram do cliente (@)
-- clientOtherSocial: Outras redes sociais
-- competitor1: Concorrente 1
-- competitor2: Concorrente 2
-- competitor3: Concorrente 3
+- clientCompany: Nome da empresa ou marca. Considere nome formal E como e chamada informalmente.
+- clientNiche: Nicho ou segmento. Nao copie literal — sintetize (ex: "financeira que faz credito para saude e pessoal" -> "Fintech — credito pessoal e saude")
+- clientCity: Cidade e estado. Pode estar implicito ("nosso hospital fica em..." ou "clientes de 235 cidades mas somos uma marca local")
+- clientWebsite: Site/URL. So se for mencionado explicitamente.
+- clientInstagram: Instagram (@). So se mencionado.
+- clientOtherSocial: Outras redes. Inclua TODAS que forem mencionadas (Meta Ads, LinkedIn, YouTube, TikTok, etc) — mesmo em contexto de "canais que usamos"
+- competitor1/2/3: Concorrentes — nome + contexto. Se mencionaram varios, pegue os 3 mais relevantes.
 
-REUNIAO COM O CLIENTE:
-- businessDescription: O que a empresa faz, pra quem vende e qual problema resolve
-- idealClient: Cliente ideal — idade, perfil, renda, o que valoriza
-- motivation: O que motivou buscar esse trabalho agora
-- brandPersonality: 3 palavras que definem a personalidade da marca + como fala
-- brandFeeling: O que quer que as pessoas sintam + o que NAO quer ser associado
-- missionValues: Missao, visao, valores ou slogan
-- futureVision: Onde quer estar em 2-3 anos
-- existingIdentity: O que ja tem de identidade visual (logo, cores HEX, fontes, manual)
-- visualStyle: Estilo visual desejado + marcas que admira
-- visualHate: O que detesta visualmente
-- existingMaterials: Fotos e videos que ja tem + onde estao
-- missingMaterials: O que nao tem e precisa ser criado
-- pastResults: Campanhas que funcionaram bem + que falharam
-- voiceTone: Tom de comunicacao (formal/informal, humor, girias, emojis, palavras)
-- freeNotes: Observacoes livres
+REUNIAO — O NEGOCIO E O PUBLICO:
+- businessDescription: O que a empresa faz, pra quem, qual problema resolve. SINTETIZE de tudo que foi dito. Inclua modelo (B2B, B2C, ambos), como funciona, diferencial.
+- idealClient: Cliente ideal. JUNTE todas as mencoes de publico: idade, genero, classe, renda, comportamento, localizacao, dores.
+- motivation: O que motivou buscar esse trabalho. Pode ser multiplos motivos em momentos diferentes.
 
-REGRAS:
-- So marque found:true se o(s) documento(s) contem informacao relevante
-- Extraia o trecho mais relevante como content
-- Se multiplos documentos mencionam o mesmo campo, consolide
-- Nao invente — use apenas o que esta nos documentos
-- SEMPRE retorne TODOS os campos listados acima
-- Responda APENAS com JSON valido`;
+REUNIAO — PERSONALIDADE DA MARCA:
+- brandPersonality: Personalidade em 3 palavras + como fala. Pode estar em respostas diretas OU em como o cliente descreve o tom ("rapido, facil, sem burocracia" = personalidade)
+- brandFeeling: O que quer transmitir + o que NAO quer ser associado. SEPARE claramente. Inclua exemplos negativos ("nao quero parecer Hapvida")
+- missionValues: Missao, visao, valores, slogan. Pode nao ter sido perguntado — o cliente pode ter dito indiretamente ("nosso objetivo e..." "eu acredito que...")
+- futureVision: Onde quer estar em 2-3 anos. Qualquer mencao de crescimento, expansao, metas futuras.
+
+REUNIAO — IDENTIDADE VISUAL E ESTILO:
+- existingIdentity: O que ja tem — logo (formatos), cores (HEX ou descricao "azul escuro"), fontes, manual, estado atual ("desatualizado", "inconsistente").
+- visualStyle: Estilo desejado. Inclua referencias visuais, adjetivos usados, preferencias. Se a agencia atual opinou, inclua.
+- visualHate: O que detesta VISUALMENTE. Diferencie de "o que nao quer ser associado" (personalidade). Aqui e estetica pura.
+
+REUNIAO — MATERIAIS E HISTORICO:
+- existingMaterials: O que ja tem. VASCULHE: fotos, videos, drive, manual, material impresso, TVs, outdoor, PDVs, provas sociais, cases. Inclua ONDE estao.
+- missingMaterials: O que precisa criar. Pode estar explicito ou implicito ("precisamos de CRM" -> material/ferramenta a criar).
+- pastResults: Campanhas/materiais que funcionaram + que falharam. Inclua CONTEXTO (por que funcionou, por que falhou).
+
+REUNIAO — TOM DE COMUNICACAO:
+- voiceTone: Como a marca se comunica. Formal/informal, humor, emojis, jargao tecnico, palavras que usa/evita. Pode estar em como o cliente se expressa (tom dele = tom da marca).
+
+REUNIAO — OBSERVACOES LIVRES:
+- freeNotes: TUDO que e importante e nao se encaixa nos campos acima. Dinamicas internas (board, socios, agencia atual), restricoes, prazos, orcamento, benchmarks inusitados, processos internos.
+
+FORMATO DE RESPOSTA:
+Responda APENAS com JSON valido. Sem texto antes, sem texto depois, sem backticks de markdown.
+
+{
+  "clientCompany": { "found": true, "content": "..." },
+  "clientNiche": { "found": true, "content": "..." },
+  "clientCity": { "found": true, "content": "..." },
+  "clientWebsite": { "found": false, "content": "" },
+  "clientInstagram": { "found": false, "content": "" },
+  "clientOtherSocial": { "found": true, "content": "..." },
+  "competitor1": { "found": true, "content": "..." },
+  "competitor2": { "found": true, "content": "..." },
+  "competitor3": { "found": false, "content": "" },
+  "businessDescription": { "found": true, "content": "..." },
+  "idealClient": { "found": true, "content": "..." },
+  "motivation": { "found": true, "content": "..." },
+  "brandPersonality": { "found": true, "content": "..." },
+  "brandFeeling": { "found": true, "content": "..." },
+  "missionValues": { "found": false, "content": "" },
+  "futureVision": { "found": true, "content": "..." },
+  "existingIdentity": { "found": true, "content": "..." },
+  "visualStyle": { "found": true, "content": "..." },
+  "visualHate": { "found": true, "content": "..." },
+  "existingMaterials": { "found": true, "content": "..." },
+  "missingMaterials": { "found": true, "content": "..." },
+  "pastResults": { "found": false, "content": "" },
+  "voiceTone": { "found": true, "content": "..." },
+  "freeNotes": { "found": true, "content": "..." }
+}
+
+REGRAS FINAIS:
+- O campo "content" deve ser um RESUMO SINTETIZADO, nao copiar e colar trechos da transcricao
+- Se a informacao esta fragmentada, JUNTE e escreva uma sintese coerente
+- Se a transcricao tem erros (nomes cortados, frases incompletas), INTERPRETE pelo contexto
+- Seja GENEROSO no found:true — se ha qualquer indicacao parcial, marque como encontrado
+- O campo freeNotes e o seu coringa — coloque TUDO que e valioso e nao coube nos outros
+- Priorize QUALIDADE da sintese sobre QUANTIDADE de texto. Seja conciso mas completo.`;
 
 async function callOpenRouter(userContent, systemPrompt) {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -75,7 +131,7 @@ async function callOpenRouter(userContent, systemPrompt) {
         { role: 'user', content: userContent }
       ],
       temperature: 0.3,
-      max_tokens: 4000
+      max_tokens: 6000
     })
   });
 
@@ -159,9 +215,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ mode: 'local', content: allText });
   }
 
-  const trimmed = allText.length > 40000
-    ? allText.slice(0, 40000) + '\n\n[... documento(s) truncado(s) ...]'
-    : allText;
+  // Trunca textos muito longos pegando INICIO + FIM (mais relevante em transcricoes:
+  // abertura com apresentacao e encerramento com resumo; miolo tem mais tangentes)
+  let trimmed = allText;
+  if (allText.length > 50000) {
+    trimmed = allText.slice(0, 25000)
+      + '\n\n[... PARTE CENTRAL DO DOCUMENTO OMITIDA PARA CABER NO LIMITE ...]\n\n'
+      + allText.slice(-25000);
+  }
 
   try {
     const raw = await callOpenRouter(trimmed, ANALYZE_PROMPT);

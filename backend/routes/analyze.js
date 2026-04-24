@@ -49,7 +49,13 @@ router.post('/', async (req, res) => {
     return res.json({ mode: 'local', content: allText });
   }
 
-  const trimmed = allText.length > 40000 ? allText.slice(0, 40000) + '\n\n[... truncado ...]' : allText;
+  // Trunca textos muito longos pegando INICIO + FIM
+  let trimmed = allText;
+  if (allText.length > 50000) {
+    trimmed = allText.slice(0, 25000)
+      + '\n\n[... PARTE CENTRAL OMITIDA ...]\n\n'
+      + allText.slice(-25000);
+  }
 
   try {
     const raw = await callOpenRouter(trimmed, ANALYZE_PROMPT);
