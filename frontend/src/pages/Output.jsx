@@ -206,7 +206,7 @@ export default function Output() {
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
+    const timeoutId = setTimeout(() => controller.abort(), 180000);
 
     const tryGenerate = async () => {
       setLoading(true);
@@ -238,7 +238,7 @@ export default function Output() {
       } catch (err) {
         if (cancelled) return;
         if (err.name === 'AbortError') {
-          setApiError('A gera\u00e7\u00e3o demorou mais de 2 minutos. Clique em "Tentar novamente" ou use o modo manual.');
+          setApiError('A gera\u00e7\u00e3o demorou mais de 3 minutos. Clique em "Tentar novamente" ou use o modo manual.');
         } else {
           setApiError('API indispon\u00edvel. ' + (err.message || 'Usando modo manual.'));
         }
@@ -382,7 +382,7 @@ export default function Output() {
               <div className="dossie-loading">
                 <div className="dossie-loading-spinner" />
                 <div className="dossie-loading-text">Gerando dossi&ecirc; com IA...</div>
-                <div className="dossie-loading-sub">Isso pode levar 60-90 segundos</div>
+                <div className="dossie-loading-sub">Pode levar at&eacute; 2-3 minutos (gerando JSON estruturado completo)</div>
               </div>
             )}
 
