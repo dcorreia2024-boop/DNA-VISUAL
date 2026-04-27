@@ -1,6 +1,9 @@
 // Vercel Serverless — geracao de dossie JSON via OpenRouter
 
-const DOSSIER_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Analise as respostas do formulario e gere um dossie profissional de identidade visual.
+const DOSSIER_PROMPT = `Voce e o assistente de onboarding visual da V4 Ruston & Co. Analise as respostas do cliente e gere um dossie profissional de identidade visual.
+
+CONTEXTO DO TEMPLATE:
+O dossie sera renderizado num template visual estilo "Brand Book Premium" (8 capitulos com capa, indice, sintese final e rodape). Voce precisa retornar JSON com TODOS os campos abaixo. Cada campo tem proposito especifico no layout.
 
 REGRAS CRITICAS:
 - Responda APENAS com JSON valido. Sem markdown, sem texto antes ou depois, sem backticks.
@@ -41,84 +44,85 @@ REGRA PARA CHECKLIST (pendingQuestions):
 
 RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
 {
-  "clientName": "nome do cliente",
-  "segment": "segmento",
-  "city": "cidade, estado",
-  "status": "contexto atual (rebranding, lancamento, expansao)",
-  "positioning": "1 frase de posicionamento da marca",
-  "mission": "missao em 1-2 frases",
-  "vision": "visao de 2-3 anos",
-  "values": "valores separados por quebra de linha",
-  "slogan": "slogan se tiver, null se nao",
-  "personality": ["palavra1", "palavra2", "palavra3"],
-  "targetAge": "faixa etaria",
-  "targetGender": "genero",
-  "targetClass": "classe social",
-  "targetLocation": "localizacao",
-  "targetBehavior": "comportamento e o que valorizam",
-  "targetPain": "dor principal",
-  "valueProposition": "proposta de valor em 2-3 frases",
-  "wantAssociations": ["assoc1", "assoc2", "assoc3", "assoc4", "assoc5"],
-  "avoidAssociations": ["evitar1", "evitar2", "evitar3", "evitar4", "evitar5"],
+  "clientName": "Nome do cliente (use <br> e <em>palavra</em> se quiser destacar parte do nome em italico, ex: 'Credit<br>Saint-<em>Germain</em>')",
+  "segment": "Segmento (ex: 'Fintech · Credito')",
+  "city": "Cidade, Estado",
+  "designerName": "Nome do designer",
+  "edition": "Volume 01",
+  "date": "data atual em pt-BR (ex: '24 de abril, 2026')",
+
+  "tagline": "1 frase descritiva da marca pra capa (max 140 chars)",
+  "positioning": "frase de posicionamento (sera mostrada como statement em destaque, com aspas e italico)",
+
+  "mission": "missao em 1-2 frases praticas",
+  "vision": "visao de 2-3 anos com meta concreta",
+  "values": "valores principais",
+
+  "personality": [
+    {"word": "Palavra1", "italic": false, "meaning": "descricao curta de como se manifesta"},
+    {"word": "Palavra2", "italic": true, "meaning": "descricao"},
+    {"word": "Palavra3", "italic": false, "meaning": "descricao"}
+  ],
+
+  "primaryAudience": "publico primario em 2-3 linhas. Use <strong>palavras</strong> pra destacar idade/classe/perfil",
+  "secondaryAudience": "publico B2B/secundario em 2-3 linhas (ou null se nao tiver)",
+
+  "wantAssociations": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "avoidAssociations": ["evitar1", "evitar2", "evitar3", "evitar4"],
+
   "colors": [
-    {"name": "Nome", "hex": "#XXXXXX", "role": "primaria", "usage": "uso"},
-    {"name": "Nome", "hex": "#XXXXXX", "role": "secundaria", "usage": "uso"},
-    {"name": "Nome", "hex": "#XXXXXX", "role": "neutra", "usage": "uso"}
+    {"name": "Nome Cor", "italicPart": "palavra em italico (parte do nome)", "hex": "#XXXXXX", "role": "Primaria", "isLight": false, "usage": "uso recomendado em 1-2 frases (aparece no hover do swatch)"},
+    {"name": "Nome Cor", "italicPart": "Aprovacao", "hex": "#XXXXXX", "role": "Secundaria", "isLight": false, "usage": "uso"},
+    {"name": "Nome Cor", "italicPart": "Calma", "hex": "#XXXXXX", "role": "Neutra", "isLight": true, "usage": "uso"},
+    {"name": "Nome Cor", "italicPart": "Texto", "hex": "#XXXXXX", "role": "Texto", "isLight": false, "usage": "uso"}
   ],
+
   "typography": [
-    {"family": "Nome da Fonte", "weight": "Bold (700)", "usage": "Headlines", "status": "recomendada"},
-    {"family": "Nome da Fonte", "weight": "Regular (400)", "usage": "Corpo", "status": "recomendada"}
+    {"display": "Frase exemplo da marca usando essa fonte (com <em> opcional pra italico)", "family": "Fraunces", "weight": "Regular 400", "usage": "Headlines, titulos", "status": "Recomendada", "fontStack": "'Fraunces', serif"},
+    {"display": "Outra frase exemplo", "family": "Inter", "weight": "Regular 400 / Medium 500", "usage": "Texto longo, UI", "status": "Recomendada", "fontStack": "'Inter', sans-serif"}
   ],
+
   "visualStyle": [
-    {"adjective": "Adj1", "description": "descricao pratica"},
-    {"adjective": "Adj2", "description": "descricao"},
-    {"adjective": "Adj3", "description": "descricao"}
+    {"adjective": "Adjetivo1", "description": "como aplicar na pratica"},
+    {"adjective": "Adjetivo2", "description": "como aplicar"},
+    {"adjective": "Adjetivo3", "description": "como aplicar"}
   ],
-  "graphicElements": ["elem1", "elem2", "elem3"],
-  "visualDontDo": ["restr1", "restr2", "restr3", "restr4"],
-  "voiceAdjectives": [
-    {"word": "Adj1", "description": "como se manifesta"},
-    {"word": "Adj2", "description": "como se manifesta"},
-    {"word": "Adj3", "description": "como se manifesta"}
-  ],
-  "communicationPersona": "persona em 2-3 frases",
-  "copyOnBrand": ["ex1", "ex2", "ex3", "ex4"],
-  "copyOffBrand": ["ex1", "ex2", "ex3", "ex4"],
-  "alwaysUseWords": ["p1", "p2", "p3", "p4", "p5"],
-  "neverUseWords": ["p1", "p2", "p3", "p4", "p5"],
-  "platformGuidelines": [
-    {"platform": "Instagram", "guideline": "direcionamento"},
-    {"platform": "WhatsApp", "guideline": "direcionamento"},
-    {"platform": "Site", "guideline": "direcionamento"}
-  ],
+
+  "visualDontDo": ["restricao1", "restricao2", "restricao3", "restricao4", "restricao5"],
+
+  "voicePersonaQuote": "1 frase resumindo a voz da marca (sera exibida como statement em italico)",
+  "copyOnBrand": ["copy1 entre aspas", "copy2", "copy3", "copy4"],
+  "copyOffBrand": ["copy1 entre aspas", "copy2", "copy3", "copy4"],
+  "alwaysUseWords": ["palavra1", "palavra2", "palavra3", "palavra4", "palavra5", "palavra6"],
+  "neverUseWords": ["palavra1", "palavra2", "palavra3", "palavra4", "palavra5", "palavra6"],
+
   "competitors": [
-    {"name": "Nome", "handle": "@handle", "location": "cidade", "doWell": "bem", "doBad": "mal", "differentiation": "diferencial"}
+    {"name": "Nome", "handle": "@handle · cidade", "doWell": "o que fazem bem", "doBad": "o que fazem mal", "differentiation": "como nos diferenciamos"}
   ],
-  "visualReferences": [
-    {"name": "Marca", "description": "por que"}
-  ],
+
   "existingAssets": [
-    {"name": "Ativo", "details": "detalhes"}
+    {"name": "Nome do ativo", "details": "detalhes (formato, localizacao, status)"}
   ],
+
   "assetsToCreate": [
-    {"name": "Ativo", "priority": "alta", "details": "detalhes"}
+    {"name": "Nome do ativo", "priority": "alta", "details": "o que precisa ser criado e contexto"}
   ],
-  "whatWorked": {"description": "o que funcionou", "why": "por que"},
-  "whatFailed": {"description": "o que falhou", "why": "por que"},
-  "currentMotivation": "motivacao atual",
-  "strategicNotes": "observacoes ou null",
-  "deliveryGuidelines": [
-    {"type": "LP (Landing Page)", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"},
-    {"type": "Ads (Meta)", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"},
-    {"type": "Carrossel (Instagram)", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"},
-    {"type": "Stories", "objective": "obj", "visualDirection": "direcao", "avoid": "evitar"}
+
+  "whatWorked": {"what": "frase entre aspas descrevendo o que funcionou", "why": "por que funcionou e como replicar"},
+  "whatFailed": {"what": "frase entre aspas descrevendo o que falhou", "why": "por que falhou e o que aprender"},
+  "strategicNote": "observacoes estrategicas (benchmarks, anti-benchmarks com motivo) ou null",
+
+  "deliveries": [
+    {"type": "Landing Page", "meta": "Prioridade Alta", "objective": "objetivo", "visualDirection": "direcao visual", "avoid": "o que evitar"},
+    {"type": "Anuncios Meta Ads", "meta": "Volume Alto", "objective": "objetivo", "visualDirection": "direcao", "avoid": "evitar"},
+    {"type": "Material B2B (Parceiros)", "meta": "Estrategico", "objective": "objetivo", "visualDirection": "direcao", "avoid": "evitar"}
   ],
-  "immediateActions": ["a1", "a2", "a3", "a4", "a5"],
-  "pendingItems": [
-    {"item": "item", "details": "detalhes e impacto"}
-  ],
-  "pendingQuestions": ["q1", "q2", "q3"],
-  "designerSummary": "resumo em 2-3 frases"
+
+  "immediateActions": ["acao1", "acao2", "acao3", "acao4", "acao5"],
+  "operationalNote": "nota sobre pendencias operacionais (CRM, tracking, ferramentas) ou null",
+  "pendingQuestions": ["pergunta1 ao cliente", "pergunta2", "pergunta3", "pergunta4"],
+
+  "designerSummary": "sintese final em 1-2 frases com aspas (vai aparecer em destaque no fim do dossie)"
 }`;
 
 const BASE_KEYS = new Set([
