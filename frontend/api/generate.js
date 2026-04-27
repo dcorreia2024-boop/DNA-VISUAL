@@ -44,19 +44,21 @@ REGRA PARA CHECKLIST (pendingQuestions):
 
 RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
 {
-  "clientName": "Nome do cliente (use <br> e <em>palavra</em> se quiser destacar parte do nome em italico, ex: 'Credit<br>Saint-<em>Germain</em>')",
+  "clientName": "Nome do cliente. Use <em>palavra</em> pra italicizar parte do nome se fizer sentido visual (ex: 'Credit Saint-<em>Germain</em>' ou 'Nexo<em>.ai</em>').",
+  "nameRaw": "Nome do cliente sem HTML",
   "segment": "Segmento (ex: 'Fintech · Credito')",
-  "city": "Cidade, Estado",
-  "designerName": "Nome do designer",
-  "edition": "Volume 01",
-  "date": "data atual em pt-BR (ex: '24 de abril, 2026')",
+  "designer": "Nome do designer",
+  "edition": "VOL. 01",
+  "issue": "NO. 0024",
+  "date": "data atual em pt-BR (ex: '24 abril, 2026')",
+  "location": "Cidade ou Brasil",
 
-  "tagline": "1 frase descritiva da marca pra capa (max 140 chars)",
-  "positioning": "frase de posicionamento (sera mostrada como statement em destaque, com aspas e italico)",
+  "tagline": "1-2 frases descritivas pra capa, sem clichê",
+  "pullquote": "1 frase de posicionamento forte (vai em destaque grande)",
 
-  "mission": "missao em 1-2 frases praticas",
+  "mission": "missao completa em 1-2 frases",
   "vision": "visao de 2-3 anos com meta concreta",
-  "values": "valores principais",
+  "values": "valores separados por quebra de linha (use \\n entre valores)",
 
   "personality": [
     {"word": "Palavra1", "italic": false, "meaning": "descricao curta de como se manifesta"},
@@ -67,19 +69,26 @@ RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
   "primaryAudience": "publico primario em 2-3 linhas. Use <strong>palavras</strong> pra destacar idade/classe/perfil",
   "secondaryAudience": "publico B2B/secundario em 2-3 linhas (ou null se nao tiver)",
 
-  "wantAssociations": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "avoidAssociations": ["evitar1", "evitar2", "evitar3", "evitar4"],
+  "wantTags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"],
+  "avoidTags": ["evitar1", "evitar2", "evitar3", "evitar4", "evitar5"],
 
-  "colors": [
-    {"name": "Nome Cor", "italicPart": "palavra em italico (parte do nome)", "hex": "#XXXXXX", "role": "Primaria", "isLight": false, "usage": "uso recomendado em 1-2 frases (aparece no hover do swatch)"},
-    {"name": "Nome Cor", "italicPart": "Aprovacao", "hex": "#XXXXXX", "role": "Secundaria", "isLight": false, "usage": "uso"},
-    {"name": "Nome Cor", "italicPart": "Calma", "hex": "#XXXXXX", "role": "Neutra", "isLight": true, "usage": "uso"},
-    {"name": "Nome Cor", "italicPart": "Texto", "hex": "#XXXXXX", "role": "Texto", "isLight": false, "usage": "uso"}
+  "colors": {
+    "primary": "#XXXXXX",
+    "secondary": "#XXXXXX",
+    "neutral": "#XXXXXX",
+    "accent": "#XXXXXX"
+  },
+
+  "palette": [
+    {"name": "Nome curto da cor (ex: Azul)", "italicPart": "Palavra evocativa em italico (ex: Confianca)", "hex": "#XXXXXX", "role": "Primaria", "usage": "Uso recomendado em 1-2 frases praticas", "proportion": 60},
+    {"name": "Nome", "italicPart": "Palavra", "hex": "#XXXXXX", "role": "Secundaria", "usage": "uso", "proportion": 25},
+    {"name": "Nome", "italicPart": "Palavra", "hex": "#XXXXXX", "role": "Neutra", "usage": "uso", "proportion": 10},
+    {"name": "Nome", "italicPart": "Palavra", "hex": "#XXXXXX", "role": "Texto", "usage": "uso", "proportion": 5}
   ],
 
   "typography": [
-    {"display": "Frase exemplo da marca usando essa fonte (com <em> opcional pra italico)", "family": "Fraunces", "weight": "Regular 400", "usage": "Headlines, titulos", "status": "Recomendada", "fontStack": "'Fraunces', serif"},
-    {"display": "Outra frase exemplo", "family": "Inter", "weight": "Regular 400 / Medium 500", "usage": "Texto longo, UI", "status": "Recomendada", "fontStack": "'Inter', sans-serif"}
+    {"display": "Frase exemplo da marca usando essa fonte (com <em>italico</em> opcional)", "family": "Fraunces", "weight": "Light–Regular", "usage": "Headlines, statements", "status": "Recomendada", "isSerif": true},
+    {"display": "Outra frase exemplo da marca", "family": "Inter", "weight": "Regular–Medium", "usage": "Texto longo, UI", "status": "Recomendada", "isSerif": false}
   ],
 
   "visualStyle": [
@@ -90,40 +99,65 @@ RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
 
   "visualDontDo": ["restricao1", "restricao2", "restricao3", "restricao4", "restricao5"],
 
-  "voicePersonaQuote": "1 frase resumindo a voz da marca (sera exibida como statement em italico)",
-  "copyOnBrand": ["copy1 entre aspas", "copy2", "copy3", "copy4"],
-  "copyOffBrand": ["copy1 entre aspas", "copy2", "copy3", "copy4"],
-  "alwaysUseWords": ["palavra1", "palavra2", "palavra3", "palavra4", "palavra5", "palavra6"],
-  "neverUseWords": ["palavra1", "palavra2", "palavra3", "palavra4", "palavra5", "palavra6"],
+  "voiceQuote": "1 frase resumindo a voz da marca (vai como pullquote em italico)",
+  "copyOnBrand": ["copy1 (sem aspas no JSON)", "copy2", "copy3", "copy4"],
+  "copyOffBrand": ["copy1", "copy2", "copy3", "copy4"],
+  "alwaysWords": ["palavra1", "palavra2", "palavra3", "palavra4", "palavra5", "palavra6"],
+  "neverWords": ["palavra1", "palavra2", "palavra3", "palavra4", "palavra5", "palavra6"],
 
   "competitors": [
-    {"name": "Nome", "handle": "@handle · cidade", "doWell": "o que fazem bem", "doBad": "o que fazem mal", "differentiation": "como nos diferenciamos"}
+    {"name": "Nome", "tagline": "Categoria · Cidade", "badge": "NACIONAL", "doWell": "o que fazem bem", "doBad": "o que fazem mal", "diff": "como nos diferenciamos"},
+    {"name": "Nome", "tagline": "Categoria · Cidade", "badge": "REGIONAL", "doWell": "...", "doBad": "...", "diff": "..."},
+    {"name": "Nome", "tagline": "Categoria · Cidade", "badge": "INCUMBENT", "doWell": "...", "doBad": "...", "diff": "..."}
   ],
 
   "existingAssets": [
-    {"name": "Nome do ativo", "details": "detalhes (formato, localizacao, status)"}
+    {"name": "Nome do ativo", "detail": "detalhes (formato, localizacao, status)"}
   ],
 
   "assetsToCreate": [
-    {"name": "Nome do ativo", "priority": "alta", "details": "o que precisa ser criado e contexto"}
+    {"name": "Nome do ativo", "detail": "contexto e o que precisa", "priority": "high"},
+    {"name": "Nome", "detail": "...", "priority": "mid"},
+    {"name": "Nome", "detail": "...", "priority": "low"}
   ],
 
-  "whatWorked": {"what": "frase entre aspas descrevendo o que funcionou", "why": "por que funcionou e como replicar"},
-  "whatFailed": {"what": "frase entre aspas descrevendo o que falhou", "why": "por que falhou e o que aprender"},
-  "strategicNote": "observacoes estrategicas (benchmarks, anti-benchmarks com motivo) ou null",
+  "whatWorked": {"what": "frase descrevendo o que funcionou (sem aspas)", "why": "por que funcionou e como replicar"},
+  "whatFailed": {"what": "frase descrevendo o que falhou", "why": "por que falhou e o que aprender"},
+  "strategicNote": "observacoes estrategicas com <strong>destaques</strong> (benchmarks, anti-benchmarks com motivo) ou null",
 
   "deliveries": [
-    {"type": "Landing Page", "meta": "Prioridade Alta", "objective": "objetivo", "visualDirection": "direcao visual", "avoid": "o que evitar"},
-    {"type": "Anuncios Meta Ads", "meta": "Volume Alto", "objective": "objetivo", "visualDirection": "direcao", "avoid": "evitar"},
-    {"type": "Material B2B (Parceiros)", "meta": "Estrategico", "objective": "objetivo", "visualDirection": "direcao", "avoid": "evitar"}
+    {"type": "Landing Page", "meta": "Prioridade Alta", "objective": "objetivo", "visual": "direcao visual", "avoid": "o que evitar"},
+    {"type": "Anuncios Meta Ads", "meta": "Volume Alto", "objective": "objetivo", "visual": "direcao", "avoid": "evitar"},
+    {"type": "Material B2B", "meta": "Estrategico", "objective": "objetivo", "visual": "direcao", "avoid": "evitar"}
   ],
 
   "immediateActions": ["acao1", "acao2", "acao3", "acao4", "acao5"],
-  "operationalNote": "nota sobre pendencias operacionais (CRM, tracking, ferramentas) ou null",
+  "operationalNote": "nota sobre pendencias nao-design (CRM, tracking, ferramentas) ou null",
   "pendingQuestions": ["pergunta1 ao cliente", "pergunta2", "pergunta3", "pergunta4"],
 
-  "designerSummary": "sintese final em 1-2 frases com aspas (vai aparecer em destaque no fim do dossie)"
-}`;
+  "finalSummary": "sintese final em 1-2 frases (vai como citacao centralizada no fim do dossie)"
+}
+
+REGRA PARA CONCORRENTES:
+- Use as informacoes do cliente. Se nao tem dados especificos sobre um concorrente, seja HONESTO: doWell e doBad podem dizer "Pesquisar antes de produzir material"
+- NAO invente analises genericas
+- Badge: "NACIONAL", "REGIONAL", "GLOBAL", "NICHO", "LOCAL", "INCUMBENT", "TECNICO"
+
+REGRA PARA CORES:
+- Em "colors", os 4 valores principais sao usados como CSS variables do template
+- Em "palette", repita os mesmos HEX com nome evocativo + italicPart + proportion (soma 100)
+- italicPart e a palavra que vai em italico (ex: name="Azul" italicPart="Confianca")
+- Nomes evocativos: "Verde Musgo", "Azul Confianca", "Bege Organico" — NAO genericos
+- HEX acessiveis (contraste WCAG 4.5:1)
+
+REGRA PARA TIPOGRAFIA:
+- Fontes reais do Google Fonts (Fraunces, Inter, Playfair Display, DM Sans, Montserrat, etc)
+- isSerif: true para serifadas (Fraunces, Playfair), false para sans (Inter, DM Sans)
+- display: frase exemplo da MARCA usando essa fonte (NAO placeholder generico)
+
+REGRA PARA CHECKLIST:
+- pendingQuestions: APENAS perguntas reais nao respondidas
+- Foque em gaps: arquivos faltando, decisoes nao tomadas, aprovacoes pendentes`;
 
 const BASE_KEYS = new Set([
   'clientCompany', 'clientNiche', 'clientCity', 'clientWebsite',

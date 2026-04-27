@@ -1,81 +1,87 @@
 import './DossieTemplate.css';
 
+// Algoritmo WCAG: calcula luminance e retorna branco ou preto pra contraste
+function getContrastText(hex) {
+  if (!hex || typeof hex !== 'string') return '#FFFFFF';
+  const c = hex.replace('#', '').padEnd(6, '0').slice(0, 6);
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return '#FFFFFF';
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? '#1A1A1A' : '#FFFFFF';
+}
+
 const arr = (v) => (Array.isArray(v) ? v : []);
-const safe = (v, fallback = '') => (v == null || v === '' ? fallback : v);
 
-// Permite renderizar HTML simples (br, em, strong) que vem da IA dentro de campos como clientName
-function HtmlText({ html, className }) {
+// Renderiza HTML simples (em, strong, br) que vem do JSON
+function HtmlText({ html, tag: Tag = 'span', className }) {
   if (!html) return null;
-  return <span className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+  return <Tag className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-// Substitui o italicPart no nome da cor por <em>
-function SwatchName({ name, italicPart }) {
-  if (!name) return null;
-  if (!italicPart || !name.includes(italicPart)) {
-    return <>{name}</>;
-  }
-  const before = name.split(italicPart)[0];
-  return <>{before}<em>{italicPart}</em></>;
+// Numero do capitulo: primeira parte normal, segunda em italico (ex: "0" + <em>"1"</em>)
+function ChapterNum({ num }) {
+  const s = String(num).padStart(2, '0').slice(0, 2);
+  return <>{s.charAt(0)}<em>{s.charAt(1)}</em></>;
 }
 
-export default function DossieTemplate({ data, clientName: fallbackClientName, designerName: fallbackDesignerName, dateStr }) {
+export default function DossieTemplate({ data, clientName: fbName, designerName: fbDesigner, dateStr }) {
   if (!data) return null;
 
-  const clientName = data.clientName || fallbackClientName || 'Cliente';
-  const designerName = data.designerName || fallbackDesignerName || 'Designer';
-  const date = data.date || dateStr || '';
+  const colors = data.colors || {};
+  const primary = colors.primary || data.palette?.[0]?.hex || '#2C5F9E';
+  const secondary = colors.secondary || data.palette?.[1]?.hex || '#6BB04C';
+  const neutral = colors.neutral || data.palette?.[2]?.hex || '#1A2B3C';
+  const accent = colors.accent || data.palette?.[3]?.hex || '#F5F3EE';
 
-  const clientColors = {
-    '--c-primary': data.colors?.[0]?.hex || '#2C5F9E',
-    '--c-secondary': data.colors?.[1]?.hex || '#6BB04C',
-    '--c-neutral': data.colors?.[3]?.hex || data.colors?.[2]?.hex || '#1A2B3C',
-    '--c-accent': data.colors?.[2]?.hex || '#F5F3EE',
+  const styleVars = {
+    '--c-primary': primary,
+    '--c-secondary': secondary,
+    '--c-neutral': neutral,
+    '--c-accent': accent,
+    '--c-primary-text': getContrastText(primary),
+    '--c-secondary-text': getContrastText(secondary),
+    '--c-neutral-text': getContrastText(neutral),
+    '--c-accent-text': getContrastText(accent),
   };
 
+  const clientName = data.clientName || fbName || 'Cliente';
+  const nameRaw = data.nameRaw || (clientName || '').replace(/<[^>]+>/g, '');
+  const designer = data.designer || fbDesigner || 'Designer';
+  const date = data.date || dateStr || '';
+
   return (
-    <div id="dossie-content" className="dossie-template" style={clientColors}>
+    <div id="dossie-content" className="dossie-template" style={styleVars}>
 
       {/* COVER */}
       <section className="dt-cover">
-        <div className="dt-cover-top">
-          <div className="dt-cover-edition">
-            {data.edition || 'Volume 01'}<br />
-            <span>Brand Foundation Document</span>
+        <div className="dt-cover-masthead">
+          <div className="dt-masthead-l">
+            <span className="dt-masthead-edition">DNA Visual &middot; {data.edition || 'VOL. 01'}</span>
+            <span className="dt-masthead-issue">{data.issue || 'NO. 0001'} &middot; {date}</span>
           </div>
-          <div className="dt-cover-v4-mark">V4 &middot; Identity</div>
+          <div className="dt-masthead-r">Brand Foundation Document<br /><em>An editorial dossier by V4 Ruston &amp; Co.</em></div>
         </div>
         <div className="dt-cover-main">
           <div className="dt-cover-eyebrow">Dossi&ecirc; de Identidade</div>
-          <h1 className="dt-cover-name">
-            <HtmlText html={clientName} />
-          </h1>
+          <HtmlText html={clientName} tag="h1" className="dt-cover-name" />
           {data.tagline && <p className="dt-cover-tagline">{data.tagline}</p>}
         </div>
-        <div className="dt-cover-bottom">
-          <div className="dt-cover-meta-item">
-            <span className="dt-cover-meta-label">Cliente</span>
-            <span className="dt-cover-meta-value">{(clientName || '').replace(/<[^>]+>/g, '').replace(/<br>/g, ' ')}</span>
-          </div>
-          <div className="dt-cover-meta-item">
-            <span className="dt-cover-meta-label">Segmento</span>
-            <span className="dt-cover-meta-value">{data.segment || '—'}</span>
-          </div>
-          <div className="dt-cover-meta-item">
-            <span className="dt-cover-meta-label">Designer</span>
-            <span className="dt-cover-meta-value">{designerName}</span>
-          </div>
-          <div className="dt-cover-meta-item">
-            <span className="dt-cover-meta-label">Edi&ccedil;&atilde;o</span>
-            <span className="dt-cover-meta-value">{date}</span>
-          </div>
+        <div className="dt-cover-footer">
+          <div className="dt-meta-block"><span className="dt-meta-label">Cliente</span><span className="dt-meta-value">{nameRaw}</span></div>
+          <div className="dt-meta-block"><span className="dt-meta-label">Segmento</span><span className="dt-meta-value">{data.segment || '—'}</span></div>
+          <div className="dt-meta-block"><span className="dt-meta-label">Localiza&ccedil;&atilde;o</span><span className="dt-meta-value">{data.location || 'Brasil'}</span></div>
+          <div className="dt-meta-block"><span className="dt-meta-label">Designer</span><span className="dt-meta-value">{designer}</span></div>
         </div>
       </section>
 
       {/* INDEX */}
       <section className="dt-index">
-        <div className="dt-index-eyebrow">Sum&aacute;rio</div>
-        <h2 className="dt-index-title">Oito cap&iacute;tulos para <em>guiar</em> o designer<br />do briefing &agrave; entrega.</h2>
+        <div className="dt-index-head">
+          <div className="dt-index-mark">i.</div>
+          <h2 className="dt-index-title">Oito cap&iacute;tulos para <em>guiar</em><br />do briefing &agrave; entrega.</h2>
+        </div>
         <div className="dt-index-grid">
           {[
             ['01', 'Identidade da Marca'],
@@ -86,10 +92,11 @@ export default function DossieTemplate({ data, clientName: fallbackClientName, d
             ['06', 'Histórico e Aprendizados'],
             ['07', 'Direcionamento por Entrega'],
             ['08', 'Checklist do Designer'],
-          ].map(([num, label]) => (
-            <div className="dt-index-item" key={num}>
-              <span className="dt-index-num">{num}</span>
-              <span className="dt-index-text">{label}</span>
+          ].map(([n, t], i) => (
+            <div className="dt-index-item" key={n}>
+              <span className="dt-index-num">{n}</span>
+              <span className="dt-index-text">{t}</span>
+              <span className="dt-index-pages">P. {(i + 1) * 4}</span>
               <span className="dt-index-arrow">&rarr;</span>
             </div>
           ))}
@@ -97,416 +104,439 @@ export default function DossieTemplate({ data, clientName: fallbackClientName, d
       </section>
 
       {/* 01 IDENTIDADE */}
-      <section className="dt-section">
-        <SectionHeader num="1" chapter="Capítulo Um" title={<>Identidade<br />da <em>Marca</em></>} intro="Quem é, o que defende, para quem fala e onde quer chegar." />
-        <div className="dt-content-area">
-          {data.positioning && (
-            <div className="dt-statement">"{data.positioning}"</div>
-          )}
+      <Chapter num="01" overline="Capítulo Um · Brand Identity" title={<>Identidade<br />da <em>Marca</em></>} intro="Quem é, o que defende, para quem fala e onde quer chegar. Os fundamentos que vão guiar toda decisão visual nos próximos capítulos.">
+        {data.pullquote && (
+          <div className="dt-pullquote">
+            <p className="dt-pullquote-text">{data.pullquote}</p>
+          </div>
+        )}
 
-          {(data.mission || data.vision || data.values) && (
+        {(data.mission || data.vision || data.values) && (
+          <div>
+            <div className="dt-block-label">Os tr&ecirc;s pilares</div>
             <div className="dt-card-grid">
-              {data.mission && <Card num="i." title="Missão" content={data.mission} />}
-              {data.vision && <Card num="ii." title="Visão" content={data.vision} />}
-              {data.values && <Card num="iii." title="Valores" content={data.values} />}
+              {data.mission && <PillarCard roman="i." eyebrow="Missão" title="A razão de existir" text={data.mission} />}
+              {data.vision && <PillarCard roman="ii." eyebrow="Visão" title="Onde quer chegar" text={data.vision} />}
+              {data.values && <PillarCard roman="iii." eyebrow="Valores" title="O que defende" text={data.values} html />}
             </div>
-          )}
+          </div>
+        )}
 
-          {arr(data.personality).length > 0 && (
-            <div>
-              <div className="dt-block-label">Personalidade da Marca</div>
-              <div className="dt-personality-row">
-                {arr(data.personality).slice(0, 3).map((p, i) => (
-                  <div className="dt-personality-cell" key={i}>
-                    <div className="dt-personality-word">
-                      {p.italic ? <em>{p.word}</em> : p.word}
-                    </div>
-                    <div className="dt-personality-meaning">{p.meaning}</div>
+        {arr(data.personality).length > 0 && (
+          <div>
+            <div className="dt-block-label">Personalidade da marca</div>
+            <div className="dt-personality">
+              {arr(data.personality).map((p, i) => (
+                <div className="dt-pers-cell" key={i}>
+                  <div className="dt-pers-word">
+                    {p.italic ? <em>{p.word}</em> : p.word}
                   </div>
-                ))}
+                  <div className="dt-pers-meaning">{p.meaning}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(data.primaryAudience || data.secondaryAudience) && (
+          <div className="dt-split">
+            {data.primaryAudience && (
+              <div>
+                <div className="dt-block-label">P&uacute;blico prim&aacute;rio</div>
+                <HtmlText html={data.primaryAudience} tag="p" className="dt-lead" />
+              </div>
+            )}
+            {data.secondaryAudience && (
+              <div>
+                <div className="dt-block-label">P&uacute;blico secund&aacute;rio</div>
+                <HtmlText html={data.secondaryAudience} tag="p" className="dt-lead" />
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="dt-split-tight">
+          {arr(data.wantTags).length > 0 && (
+            <div>
+              <div className="dt-block-label">Quero ser visto como <span className="dt-label-aside">— associa&ccedil;&otilde;es desejadas</span></div>
+              <div className="dt-tag-row">
+                {arr(data.wantTags).map((t, i) => <span className="dt-tag dt-tag-pos" key={i}>{t}</span>)}
               </div>
             </div>
           )}
-
-          {(data.primaryAudience || data.secondaryAudience) && (
-            <div className="dt-two-col">
-              {data.primaryAudience && (
-                <div>
-                  <div className="dt-block-label">Público-Alvo Primário</div>
-                  <div className="dt-audience" dangerouslySetInnerHTML={{ __html: data.primaryAudience }} />
-                </div>
-              )}
-              {data.secondaryAudience && (
-                <div>
-                  <div className="dt-block-label">Público-Alvo Secundário (B2B)</div>
-                  <div className="dt-audience" dangerouslySetInnerHTML={{ __html: data.secondaryAudience }} />
-                </div>
-              )}
-            </div>
-          )}
-
-          {arr(data.wantAssociations).length > 0 && (
+          {arr(data.avoidTags).length > 0 && (
             <div>
-              <div className="dt-block-label">Associa&ccedil;&otilde;es Desejadas <span className="dt-block-label-aux">/ Quero ser visto como</span></div>
-              <div className="dt-tag-group">
-                {arr(data.wantAssociations).map((t, i) => (<span className="dt-tag dt-tag-positive" key={i}>{t}</span>))}
-              </div>
-            </div>
-          )}
-
-          {arr(data.avoidAssociations).length > 0 && (
-            <div>
-              <div className="dt-block-label">Associa&ccedil;&otilde;es a Evitar <span className="dt-block-label-aux">/ Nunca quero parecer</span></div>
-              <div className="dt-tag-group">
-                {arr(data.avoidAssociations).map((t, i) => (<span className="dt-tag dt-tag-negative" key={i}>{t}</span>))}
+              <div className="dt-block-label">Nunca quero parecer <span className="dt-label-aside">— associa&ccedil;&otilde;es a evitar</span></div>
+              <div className="dt-tag-row">
+                {arr(data.avoidTags).map((t, i) => <span className="dt-tag dt-tag-neg" key={i}>{t}</span>)}
               </div>
             </div>
           )}
         </div>
-      </section>
+      </Chapter>
 
       {/* 02 DIRETRIZES VISUAIS */}
-      <section className="dt-section dt-section-alt">
-        <SectionHeader num="2" chapter="Capítulo Dois" title={<>Diretrizes<br /><em>Visuais</em></>} intro="A paleta, a tipografia e o estilo que traduzem a marca em cada peça." />
-        <div className="dt-content-area">
-
-          {arr(data.colors).length > 0 && (
-            <div>
-              <div className="dt-block-label">Paleta Crom&aacute;tica</div>
-              <div className="dt-palette">
-                {arr(data.colors).slice(0, 4).map((c, i) => (
-                  <div className={`dt-swatch ${c.isLight ? 'light' : ''}`} style={{ background: c.hex }} key={i}>
-                    <div className="dt-swatch-name"><SwatchName name={c.name} italicPart={c.italicPart} /></div>
-                    <div className="dt-swatch-hex">{c.hex}</div>
-                    <div className="dt-swatch-role">{c.role}</div>
-                    <div className="dt-swatch-meta">
-                      <div className="dt-swatch-usage">{c.usage}</div>
-                    </div>
+      <Chapter num="02" overline="Capítulo Dois · Visual Guidelines" title={<>Diretrizes<br /><em>Visuais</em></>} intro="A paleta, a tipografia e o estilo que traduzem a marca em cada peça. Tudo com aplicação prática — pense no designer abrindo o Figma amanhã." modifier="dt-chapter-alt">
+        {arr(data.palette).length > 0 && (
+          <div className="dt-palette-block">
+            <div className="dt-block-label">Paleta crom&aacute;tica</div>
+            <div className="dt-palette">
+              {arr(data.palette).map((color, i) => (
+                <div
+                  className="dt-swatch"
+                  key={i}
+                  style={{ background: color.hex, color: getContrastText(color.hex) }}
+                >
+                  <div className="dt-swatch-name">
+                    {color.name} {color.italicPart && <em>{color.italicPart}</em>}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {arr(data.typography).length > 0 && (
-            <div>
-              <div className="dt-block-label">Tipografia</div>
-              {arr(data.typography).map((t, i) => (
-                <div className="dt-type-specimen" key={i}>
-                  <div
-                    className="dt-type-display"
-                    style={{ fontFamily: t.fontStack || `'${t.family}', sans-serif`, fontSize: i === 0 ? undefined : 48 }}
-                    dangerouslySetInnerHTML={{ __html: t.display }}
-                  />
-                  <div className="dt-type-info">
-                    <div><div className="dt-type-info-label">Fam&iacute;lia</div><div className="dt-type-info-value">{t.family}</div></div>
-                    <div><div className="dt-type-info-label">Peso</div><div className="dt-type-info-value">{t.weight}</div></div>
-                    <div><div className="dt-type-info-label">Uso</div><div className="dt-type-info-value">{t.usage}</div></div>
-                    <div><div className="dt-type-info-label">Status</div><div className="dt-type-info-value">{t.status}</div></div>
+                  <div className="dt-swatch-hex">{color.hex}</div>
+                  <div className="dt-swatch-role">{color.role}</div>
+                  <div className="dt-swatch-meta">
+                    <div className="dt-swatch-usage">{color.usage}</div>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-
-          {arr(data.visualStyle).length > 0 && (
-            <div>
-              <div className="dt-block-label">Estilo Visual</div>
-              <div className="dt-card-grid">
-                {arr(data.visualStyle).map((s, i) => (
-                  <Card key={i} num={['i.', 'ii.', 'iii.', 'iv.'][i] || `${i + 1}.`} title={s.adjective} content={s.description} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {arr(data.visualDontDo).length > 0 && (
-            <div>
-              <div className="dt-block-label">O que Evitar</div>
-              <div className="dt-tag-group">
-                {arr(data.visualDontDo).map((t, i) => (<span className="dt-tag dt-tag-negative" key={i}>{t}</span>))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* 03 TOM DE VOZ */}
-      <section className="dt-section">
-        <SectionHeader num="3" chapter="Capítulo Três" title={<>Tom de <em>Voz</em></>} intro="Como a marca fala, escreve e responde — em qualquer canal, em qualquer hora." />
-        <div className="dt-content-area">
-          {data.voicePersonaQuote && (<div className="dt-statement">"{data.voicePersonaQuote}"</div>)}
-
-          {(arr(data.copyOnBrand).length > 0 || arr(data.copyOffBrand).length > 0) && (
-            <div>
-              <div className="dt-block-label">Compara&ccedil;&atilde;o ON-Brand &times; OFF-Brand</div>
-              <div className="dt-copy-compare">
-                {arr(data.copyOnBrand).length > 0 && (
-                  <div className="dt-copy-col">
-                    <div className="dt-copy-col-header">
-                      <div className="dt-copy-mark on">&#10003;</div>
-                      <div className="dt-copy-col-title">Como falamos</div>
-                    </div>
-                    <div className="dt-copy-list">
-                      {arr(data.copyOnBrand).map((c, i) => (<div className="dt-copy-item on" key={i}>{c}</div>))}
-                    </div>
-                  </div>
-                )}
-                {arr(data.copyOffBrand).length > 0 && (
-                  <div className="dt-copy-col">
-                    <div className="dt-copy-col-header">
-                      <div className="dt-copy-mark off">&times;</div>
-                      <div className="dt-copy-col-title">Como N&Atilde;O falamos</div>
-                    </div>
-                    <div className="dt-copy-list">
-                      {arr(data.copyOffBrand).map((c, i) => (<div className="dt-copy-item off" key={i}>{c}</div>))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="dt-two-col">
-            {arr(data.alwaysUseWords).length > 0 && (
-              <div>
-                <div className="dt-block-label">Sempre Usar</div>
-                <div className="dt-tag-group">
-                  {arr(data.alwaysUseWords).map((w, i) => (<span className="dt-tag dt-tag-positive" key={i}>{w}</span>))}
+            {arr(data.palette).some(c => c.proportion) && (
+              <div className="dt-ratio-block">
+                <div className="dt-ratio-bar">
+                  {arr(data.palette).map((color, i) => (
+                    <div className="dt-ratio-segment" key={i} style={{ background: color.hex, width: `${color.proportion || 0}%` }} />
+                  ))}
                 </div>
-              </div>
-            )}
-            {arr(data.neverUseWords).length > 0 && (
-              <div>
-                <div className="dt-block-label">Nunca Usar</div>
-                <div className="dt-tag-group">
-                  {arr(data.neverUseWords).map((w, i) => (<span className="dt-tag dt-tag-negative" key={i}>{w}</span>))}
+                <div className="dt-ratio-legend">
+                  {arr(data.palette).map((color, i) => (
+                    <div className="dt-ratio-legend-item" key={i}>
+                      <span className="dt-ratio-dot" style={{ background: color.hex }} />
+                      <span>{color.name} {color.proportion}%</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
+        )}
+
+        {arr(data.typography).length > 0 && (
+          <div>
+            <div className="dt-block-label">Tipografia</div>
+            {arr(data.typography).map((t, i) => (
+              <div className="dt-specimen" key={i}>
+                <div className="dt-specimen-mark">{i === 0 ? 'Display · Headline' : 'Body · UI'}</div>
+                <div
+                  className="dt-specimen-display"
+                  style={{ fontFamily: `'${t.family}', ${t.isSerif ? 'serif' : 'sans-serif'}` }}
+                  dangerouslySetInnerHTML={{ __html: t.display }}
+                />
+                <div className="dt-specimen-meta">
+                  <div className="dt-spec-item"><span className="dt-spec-label">Fam&iacute;lia</span><span className="dt-spec-value">{t.family}</span></div>
+                  <div className="dt-spec-item"><span className="dt-spec-label">Peso</span><span className="dt-spec-value">{t.weight}</span></div>
+                  <div className="dt-spec-item"><span className="dt-spec-label">Uso</span><span className="dt-spec-value">{t.usage}</span></div>
+                  <div className="dt-spec-item"><span className="dt-spec-label">Status</span><span className="dt-spec-value">{t.status}</span></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {arr(data.visualStyle).length > 0 && (
+          <div>
+            <div className="dt-block-label">Estilo visual</div>
+            <div className="dt-card-grid">
+              {arr(data.visualStyle).map((s, i) => (
+                <PillarCard key={i} roman={['i.', 'ii.', 'iii.', 'iv.'][i] || `${i+1}.`} eyebrow={`Princípio ${i + 1}`} title={s.adjective} text={s.description} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {arr(data.visualDontDo).length > 0 && (
+          <div>
+            <div className="dt-block-label">O que evitar <span className="dt-label-aside">— restri&ccedil;&otilde;es visuais</span></div>
+            <div className="dt-tag-row">
+              {arr(data.visualDontDo).map((t, i) => <span className="dt-tag dt-tag-neg" key={i}>{t}</span>)}
+            </div>
+          </div>
+        )}
+      </Chapter>
+
+      {/* 03 TOM DE VOZ */}
+      <Chapter num="03" overline="Capítulo Três · Voice & Tone" title={<>Tom de <em>Voz</em></>} intro="Como a marca fala, escreve e responde — em qualquer canal, em qualquer hora. Exemplos concretos de copy ON e OFF brand.">
+        {data.voiceQuote && (
+          <div className="dt-pullquote">
+            <p className="dt-pullquote-text">{data.voiceQuote}</p>
+          </div>
+        )}
+
+        {(arr(data.copyOnBrand).length > 0 || arr(data.copyOffBrand).length > 0) && (
+          <div>
+            <div className="dt-block-label">Como falamos <span className="dt-label-aside">vs. como N&Atilde;O falamos</span></div>
+            <div className="dt-copy-frame">
+              {arr(data.copyOnBrand).length > 0 && (
+                <div className="dt-copy-side">
+                  <div className="dt-copy-side-h">
+                    <div className="dt-copy-mark dt-copy-mark-on">&#10003;</div>
+                    <span className="dt-copy-side-t">ON-Brand</span>
+                  </div>
+                  <div className="dt-copy-list">
+                    {arr(data.copyOnBrand).map((c, i) => <div className="dt-copy-item dt-copy-on" key={i}>"{c}"</div>)}
+                  </div>
+                </div>
+              )}
+              {arr(data.copyOffBrand).length > 0 && (
+                <div className="dt-copy-side">
+                  <div className="dt-copy-side-h">
+                    <div className="dt-copy-mark dt-copy-mark-off">&times;</div>
+                    <span className="dt-copy-side-t">OFF-Brand</span>
+                  </div>
+                  <div className="dt-copy-list">
+                    {arr(data.copyOffBrand).map((c, i) => <div className="dt-copy-item dt-copy-off" key={i}>"{c}"</div>)}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="dt-split-tight">
+          {arr(data.alwaysWords).length > 0 && (
+            <div>
+              <div className="dt-block-label">Sempre usar</div>
+              <div className="dt-tag-row">
+                {arr(data.alwaysWords).map((w, i) => <span className="dt-tag dt-tag-pos" key={i}>{w}</span>)}
+              </div>
+            </div>
+          )}
+          {arr(data.neverWords).length > 0 && (
+            <div>
+              <div className="dt-block-label">Nunca usar</div>
+              <div className="dt-tag-row">
+                {arr(data.neverWords).map((w, i) => <span className="dt-tag dt-tag-neg" key={i}>{w}</span>)}
+              </div>
+            </div>
+          )}
         </div>
-      </section>
+      </Chapter>
 
       {/* 04 CONCORRENTES */}
-      <section className="dt-section dt-section-alt">
-        <SectionHeader num="4" chapter="Capítulo Quatro" title={<>Concorrentes &amp;<br /><em>Refer&ecirc;ncias</em></>} intro="O que o mercado faz, o que o cliente faz diferente." />
-        <div className="dt-content-area">
-          {arr(data.competitors).map((c, i) => (
-            <div className="dt-competitor" key={i}>
-              <div className="dt-competitor-head">
-                <div className="dt-competitor-name">{c.name}</div>
-                <div className="dt-competitor-handle">{c.handle}</div>
+      <Chapter num="04" overline="Capítulo Quatro · Competitive Mapping" title={<>Concorrentes &amp;<br /><em>Refer&ecirc;ncias</em></>} intro="O que o mercado faz, o que o cliente faz diferente. Análise dos concorrentes mais relevantes — com ângulo prático para o designer." modifier="dt-chapter-alt">
+        {arr(data.competitors).map((comp, i) => (
+          <div className="dt-competitor" key={i}>
+            <div className="dt-competitor-h">
+              <div className="dt-competitor-info">
+                <h3 className="dt-competitor-name">{comp.name}</h3>
+                {comp.tagline && <span className="dt-competitor-tag">{comp.tagline}</span>}
               </div>
-              <div className="dt-competitor-body">
-                <div className="dt-competitor-cell">
-                  <div className="dt-competitor-cell-label">Faz Bem</div>
-                  <p className="dt-competitor-cell-text">{c.doWell}</p>
-                </div>
-                <div className="dt-competitor-cell">
-                  <div className="dt-competitor-cell-label">Faz Mal</div>
-                  <p className="dt-competitor-cell-text">{c.doBad}</p>
-                </div>
-                <div className="dt-competitor-cell">
-                  <div className="dt-competitor-cell-label">Como Diferenciamos</div>
-                  <p className="dt-competitor-cell-text">{c.differentiation}</p>
-                </div>
+              {comp.badge && <span className="dt-competitor-badge">{comp.badge}</span>}
+            </div>
+            <div className="dt-competitor-body">
+              <div className="dt-competitor-cell">
+                <div className="dt-competitor-cell-l">Faz Bem</div>
+                <p className="dt-competitor-cell-t">{comp.doWell}</p>
+              </div>
+              <div className="dt-competitor-cell">
+                <div className="dt-competitor-cell-l">Faz Mal</div>
+                <p className="dt-competitor-cell-t">{comp.doBad}</p>
+              </div>
+              <div className="dt-competitor-cell">
+                <div className="dt-competitor-cell-l">Como Diferenciamos</div>
+                <p className="dt-competitor-cell-t">{comp.diff || comp.differentiation}</p>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        ))}
+      </Chapter>
 
       {/* 05 MATERIAIS */}
-      <section className="dt-section">
-        <SectionHeader num="5" chapter="Capítulo Cinco" title={<>Materiais &amp;<br /><em>Ativos</em></>} intro="O que o cliente já tem nas mãos. O que precisa ser criado, em que ordem." />
-        <div className="dt-content-area">
-          {arr(data.existingAssets).length > 0 && (
-            <div>
-              <div className="dt-block-label">J&aacute; Existe</div>
-              <div className="dt-asset-list">
-                {arr(data.existingAssets).map((a, i) => (
-                  <div className="dt-asset-item" key={i}>
-                    <div className="dt-asset-icon has">&#10003;</div>
-                    <div className="dt-asset-content">
-                      <div className="dt-asset-title">{a.name}</div>
-                      <div className="dt-asset-detail">{a.details}</div>
-                    </div>
+      <Chapter num="05" overline="Capítulo Cinco · Assets & Materials" title={<>Materiais &amp;<br /><em>Ativos</em></>} intro="O que o cliente já tem. O que precisa ser criado. Em que ordem. O designer vê isso e sabe por onde começar amanhã.">
+        {arr(data.existingAssets).length > 0 && (
+          <div>
+            <div className="dt-block-label">J&aacute; existe</div>
+            <div className="dt-assets">
+              {arr(data.existingAssets).map((a, i) => (
+                <div className="dt-asset" key={i}>
+                  <div className="dt-asset-icon dt-asset-icon-has">&#10003;</div>
+                  <div className="dt-asset-content">
+                    <div className="dt-asset-name">{a.name}</div>
+                    <div className="dt-asset-detail">{a.detail || a.details}</div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {arr(data.assetsToCreate).length > 0 && (
-            <div>
-              <div className="dt-block-label">Precisa Ser Criado</div>
-              <div className="dt-asset-list">
-                {arr(data.assetsToCreate).map((a, i) => {
-                  const prio = (a.priority || '').toLowerCase();
-                  const iconClass = prio === 'alta' ? 'high' : prio === 'baixa' ? 'low' : 'medium';
-                  const arrow = prio === 'alta' ? '↑' : prio === 'baixa' ? '·' : '→';
-                  const prioLabel = prio === 'alta' ? 'Alta' : prio === 'baixa' ? 'Baixa' : 'Média';
-                  return (
-                    <div className="dt-asset-item" key={i}>
-                      <div className={`dt-asset-icon ${iconClass}`}>{arrow}</div>
-                      <div className="dt-asset-content">
-                        <div className="dt-asset-title">{a.name}</div>
-                        <div className="dt-asset-detail">{a.details}</div>
-                      </div>
-                      <div className={`dt-asset-priority ${iconClass}`}>{prioLabel}</div>
+        {arr(data.assetsToCreate).length > 0 && (
+          <div>
+            <div className="dt-block-label">Precisa ser criado <span className="dt-label-aside">— por prioridade</span></div>
+            <div className="dt-assets">
+              {arr(data.assetsToCreate).map((a, i) => {
+                const p = (a.priority || '').toLowerCase();
+                const ic = p === 'high' || p === 'alta' ? 'dt-asset-icon-high' : p === 'mid' || p === 'média' || p === 'media' ? 'dt-asset-icon-mid' : 'dt-asset-icon-low';
+                const tg = p === 'high' || p === 'alta' ? 'dt-asset-tag-high' : p === 'mid' || p === 'média' || p === 'media' ? 'dt-asset-tag-mid' : 'dt-asset-tag-low';
+                const tt = p === 'high' || p === 'alta' ? 'Alta' : p === 'mid' || p === 'média' || p === 'media' ? 'Média' : 'Baixa';
+                const sym = p === 'high' || p === 'alta' ? '↑' : p === 'mid' || p === 'média' || p === 'media' ? '→' : '·';
+                return (
+                  <div className="dt-asset" key={i}>
+                    <div className={`dt-asset-icon ${ic}`}>{sym}</div>
+                    <div className="dt-asset-content">
+                      <div className="dt-asset-name">{a.name}</div>
+                      <div className="dt-asset-detail">{a.detail || a.details}</div>
                     </div>
-                  );
-                })}
-              </div>
+                    <span className={`dt-asset-tag ${tg}`}>{tt}</span>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        )}
+      </Chapter>
 
       {/* 06 HISTORICO */}
-      <section className="dt-section dt-section-dark">
-        <SectionHeader num="6" chapter="Capítulo Seis" title={<>Hist&oacute;rico &amp;<br /><em>Aprendizados</em></>} intro="O que já foi tentado, o que funcionou, o que falhou — e por quê." />
-        <div className="dt-content-area">
-          {(data.whatWorked || data.whatFailed) && (
-            <div className="dt-history-grid">
-              {data.whatWorked && (
-                <div className="dt-history-cell success">
-                  <div className="dt-history-cell-label">Funcionou</div>
-                  <div className="dt-history-cell-what">"{data.whatWorked.what}"</div>
-                  {data.whatWorked.why && <div className="dt-history-cell-why">Por qu&ecirc;: {data.whatWorked.why}</div>}
-                </div>
-              )}
-              {data.whatFailed && (
-                <div className="dt-history-cell failure">
-                  <div className="dt-history-cell-label">N&atilde;o Funcionou</div>
-                  <div className="dt-history-cell-what">"{data.whatFailed.what}"</div>
-                  {data.whatFailed.why && <div className="dt-history-cell-why">Por qu&ecirc;: {data.whatFailed.why}</div>}
-                </div>
-              )}
-            </div>
-          )}
+      <Chapter num="06" overline="Capítulo Seis · Lessons Learned" title={<>Hist&oacute;rico &amp;<br /><em>Aprendizados</em></>} intro="O que já foi tentado, o que funcionou, o que falhou — e por quê. Aprendizados que evitam repetir erro do passado." modifier="dt-chapter-ink">
+        {(data.whatWorked || data.whatFailed) && (
+          <div className="dt-history-frame">
+            {data.whatWorked && (
+              <div className="dt-history-cell dt-history-success">
+                <div className="dt-history-l">Funcionou</div>
+                <h3 className="dt-history-what">"{data.whatWorked.what}"</h3>
+                <p className="dt-history-why">{data.whatWorked.why}</p>
+              </div>
+            )}
+            {data.whatFailed && (
+              <div className="dt-history-cell dt-history-fail">
+                <div className="dt-history-l">N&atilde;o Funcionou</div>
+                <h3 className="dt-history-what">"{data.whatFailed.what}"</h3>
+                <p className="dt-history-why">{data.whatFailed.why}</p>
+              </div>
+            )}
+          </div>
+        )}
 
-          {data.strategicNote && (
-            <div className="dt-note dt-note-dark">
-              <div className="dt-note-label">Nota Estrat&eacute;gica</div>
-              <div className="dt-note-text" dangerouslySetInnerHTML={{ __html: data.strategicNote }} />
-            </div>
-          )}
-        </div>
-      </section>
+        {data.strategicNote && (
+          <div className="dt-callout">
+            <div className="dt-callout-l">Nota Estrat&eacute;gica</div>
+            <HtmlText html={data.strategicNote} tag="p" className="dt-callout-t" />
+          </div>
+        )}
+      </Chapter>
 
       {/* 07 ENTREGAS */}
-      <section className="dt-section">
-        <SectionHeader num="7" chapter="Capítulo Sete" title={<>Direcionamento<br />por <em>Entrega</em></>} intro="Como aplicar a marca em cada formato — sem perder coerência." />
-        <div className="dt-content-area">
-          {arr(data.deliveries).map((d, i) => (
-            <div className="dt-delivery" key={i}>
-              <div className="dt-delivery-head">
-                <div className="dt-delivery-type">{d.type}</div>
-                {d.meta && <div className="dt-delivery-meta">{d.meta}</div>}
+      <Chapter num="07" overline="Capítulo Sete · Delivery Direction" title={<>Direcionamento<br />por <em>Entrega</em></>} intro="Como aplicar a marca em cada formato — sem perder coerência. Especificações práticas para o designer começar.">
+        {arr(data.deliveries).map((d, i) => (
+          <div className="dt-delivery" key={i}>
+            <div className="dt-delivery-h">
+              <span className="dt-delivery-type">{d.type}</span>
+              {d.meta && <span className="dt-delivery-prio">{d.meta}</span>}
+            </div>
+            <div className="dt-delivery-body">
+              <div className="dt-delivery-cell">
+                <div className="dt-delivery-cell-l">Objetivo</div>
+                <p className="dt-delivery-cell-t">{d.objective}</p>
               </div>
-              <div className="dt-delivery-body">
-                <div className="dt-delivery-cell">
-                  <div className="dt-delivery-cell-label">Objetivo</div>
-                  <p className="dt-delivery-cell-text">{d.objective}</p>
-                </div>
-                <div className="dt-delivery-cell">
-                  <div className="dt-delivery-cell-label">Dire&ccedil;&atilde;o Visual</div>
-                  <p className="dt-delivery-cell-text">{d.visualDirection}</p>
-                </div>
-                <div className="dt-delivery-cell">
-                  <div className="dt-delivery-cell-label">Evitar</div>
-                  <p className="dt-delivery-cell-text">{d.avoid}</p>
-                </div>
+              <div className="dt-delivery-cell">
+                <div className="dt-delivery-cell-l">Dire&ccedil;&atilde;o Visual</div>
+                <p className="dt-delivery-cell-t">{d.visual || d.visualDirection}</p>
+              </div>
+              <div className="dt-delivery-cell">
+                <div className="dt-delivery-cell-l">Evitar</div>
+                <p className="dt-delivery-cell-t">{d.avoid}</p>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        ))}
+      </Chapter>
 
       {/* 08 CHECKLIST */}
-      <section className="dt-section dt-section-alt">
-        <SectionHeader num="8" chapter="Capítulo Oito" title={<>Checklist do<br /><em>Designer</em></>} intro="O que pode começar hoje, o que está pendente, o que precisa ser perguntado." />
-        <div className="dt-content-area">
-          {arr(data.immediateActions).length > 0 && (
-            <div>
-              <div className="dt-block-label">A&ccedil;&otilde;es Imediatas</div>
-              <div className="dt-checklist">
-                {arr(data.immediateActions).map((a, i) => (
-                  <div className="dt-check-item" key={i}>
-                    <div className="dt-check-box" />
-                    <div className="dt-check-text">{a}</div>
-                  </div>
-                ))}
-              </div>
+      <Chapter num="08" overline="Capítulo Oito · Designer Checklist" title={<>Checklist do<br /><em>Designer</em></>} intro="O que pode começar hoje. O que está pendente. O que precisa ser perguntado antes de produzir." modifier="dt-chapter-alt">
+        {arr(data.immediateActions).length > 0 && (
+          <div>
+            <div className="dt-block-label">A&ccedil;&otilde;es imediatas</div>
+            <div className="dt-checklist">
+              {arr(data.immediateActions).map((a, i) => (
+                <div className="dt-check-item" key={i}>
+                  <div className="dt-check-box" />
+                  <div className="dt-check-text">{a}</div>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {data.operationalNote && (
-            <div>
-              <div className="dt-block-label">Pend&ecirc;ncias Operacionais <span className="dt-block-label-aux">/ n&atilde;o &eacute; design, mas afeta</span></div>
-              <div className="dt-note">
-                <div className="dt-note-label">Aten&ccedil;&atilde;o</div>
-                <div className="dt-note-text">{data.operationalNote}</div>
-              </div>
+        {data.operationalNote && (
+          <div>
+            <div className="dt-block-label">Pend&ecirc;ncias operacionais <span className="dt-label-aside">— n&atilde;o &eacute; design, mas afeta</span></div>
+            <div className="dt-callout dt-callout-warn">
+              <div className="dt-callout-l">Aten&ccedil;&atilde;o</div>
+              <p className="dt-callout-t">{data.operationalNote}</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {arr(data.pendingQuestions).length > 0 && (
-            <div>
-              <div className="dt-block-label">Perguntas para o Cliente</div>
-              <div className="dt-checklist">
-                {arr(data.pendingQuestions).map((q, i) => (
-                  <div className="dt-check-item" key={i}>
-                    <div className="dt-check-box" />
-                    <div className="dt-check-text">{q}</div>
-                  </div>
-                ))}
-              </div>
+        {arr(data.pendingQuestions).length > 0 && (
+          <div>
+            <div className="dt-block-label">Perguntas para o cliente</div>
+            <div className="dt-checklist">
+              {arr(data.pendingQuestions).map((q, i) => (
+                <div className="dt-check-item" key={i}>
+                  <div className="dt-check-box" />
+                  <div className="dt-check-text">{q}</div>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        )}
+      </Chapter>
 
       {/* FINAL SUMMARY */}
-      {data.designerSummary && (
-        <div className="dt-final-summary">
-          <div className="dt-final-eyebrow">S&iacute;ntese para o Designer</div>
-          <p className="dt-final-text">"{data.designerSummary}"</p>
+      {data.finalSummary && (
+        <div className="dt-final">
+          <div className="dt-final-content">
+            <div className="dt-final-mark">S&iacute;ntese para o designer</div>
+            <div className="dt-final-quote-mark">"</div>
+            <p className="dt-final-text">{data.finalSummary}</p>
+          </div>
         </div>
       )}
 
       {/* FOOTER */}
       <footer className="dt-doc-footer">
-        <span>DNA Visual &middot; V4 Ruston &amp; Co.</span>
-        <span>{data.edition || 'Vol. 01'} &middot; {date} &middot; Designer: {designerName}</span>
+        <span className="dt-footer-block">DNA Visual &middot; V4 Ruston &amp; Co.</span>
+        <span className="dt-footer-block">{data.edition || 'VOL. 01'} &middot; {data.issue || 'NO. 0001'}</span>
+        <span className="dt-footer-block">{date} &middot; {designer}</span>
       </footer>
     </div>
   );
 }
 
-function SectionHeader({ num, chapter, title, intro }) {
+function Chapter({ num, overline, title, intro, modifier = '', children }) {
   return (
-    <div className="dt-section-header">
-      <div className="dt-section-num-block">
-        <span className="dt-section-num">0<em>{num}</em></span>
-        <div className="dt-section-num-label">{chapter}</div>
+    <section className={`dt-chapter ${modifier}`}>
+      <div className="dt-ch-header">
+        <div>
+          <div className="dt-ch-num-ribbon">
+            <div className="dt-ch-num"><ChapterNum num={num} /></div>
+            <div className="dt-ch-overline">{overline}</div>
+          </div>
+          <h2 className="dt-ch-title">{title}</h2>
+        </div>
       </div>
-      <div className="dt-section-title-block">
-        <h2 className="dt-section-title">{title}</h2>
-        {intro && <p className="dt-section-intro">{intro}</p>}
-      </div>
-    </div>
+      {intro && <p className="dt-ch-intro">{intro}</p>}
+      <div className="dt-ch-content">{children}</div>
+    </section>
   );
 }
 
-function Card({ num, title, content }) {
+function PillarCard({ roman, eyebrow, title, text, html }) {
   return (
     <div className="dt-card">
-      <div className="dt-card-num">{num}</div>
-      <div className="dt-card-title">{title}</div>
-      <p className="dt-card-content">{content}</p>
+      <div className="dt-card-roman">{roman}</div>
+      <div className="dt-card-eyebrow">{eyebrow}</div>
+      <h3 className="dt-card-title">{title}</h3>
+      {html
+        ? <p className="dt-card-text" dangerouslySetInnerHTML={{ __html: (text || '').replace(/\n/g, '<br/>') }} />
+        : <p className="dt-card-text">{text}</p>}
     </div>
   );
 }
