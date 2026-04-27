@@ -87,8 +87,8 @@ RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
   ],
 
   "typography": [
-    {"display": "Frase exemplo da marca usando essa fonte (com <em>italico</em> opcional)", "family": "Fraunces", "weight": "Light–Regular", "usage": "Headlines, statements", "status": "Recomendada", "isSerif": true},
-    {"display": "Outra frase exemplo da marca", "family": "Inter", "weight": "Regular–Medium", "usage": "Texto longo, UI", "status": "Recomendada", "isSerif": false}
+    {"display": "Frase exemplo da marca usando essa fonte (com <em>italico</em> opcional)", "family": "Fraunces", "weight": "Light–Regular", "usage": "Display — momentos monumentais", "status": "Recomendada", "isSerif": true, "googleFontsUrl": "Fraunces:ital,opsz,wght@0,9..144,200..700;1,9..144,200..700"},
+    {"display": "Outra frase exemplo da marca", "family": "Inter", "weight": "Regular–Medium", "usage": "Body — todo o resto do dossie", "status": "Recomendada", "isSerif": false, "googleFontsUrl": "Inter:wght@300;400;500;600;700"}
   ],
 
   "visualStyle": [
@@ -135,7 +135,7 @@ RETORNE ESTE JSON EXATO (todos os campos obrigatorios):
   "operationalNote": "nota sobre pendencias nao-design (CRM, tracking, ferramentas) ou null",
   "pendingQuestions": ["pergunta1 ao cliente", "pergunta2", "pergunta3", "pergunta4"],
 
-  "finalSummary": "sintese final em 1-2 frases (vai como citacao centralizada no fim do dossie)"
+  "finalSummary": "sintese final em 1-2 frases MAXIMO (max 200 chars). Vai aparecer em destaque alinhado a esquerda no fim do dossie."
 }
 
 REGRA PARA CONCORRENTES:
@@ -151,9 +151,13 @@ REGRA PARA CORES:
 - HEX acessiveis (contraste WCAG 4.5:1)
 
 REGRA PARA TIPOGRAFIA:
-- Fontes reais do Google Fonts (Fraunces, Inter, Playfair Display, DM Sans, Montserrat, etc)
-- isSerif: true para serifadas (Fraunces, Playfair), false para sans (Inter, DM Sans)
+- Fontes reais do Google Fonts. ORDEM IMPORTANTE: primeira = display (serif normalmente), segunda = body (sans normalmente)
+- isSerif: true para serifadas (Fraunces, Playfair Display, DM Serif Display, Cormorant), false para sans (Inter, DM Sans, Manrope, Geist, Space Grotesk)
 - display: frase exemplo da MARCA usando essa fonte (NAO placeholder generico)
+- googleFontsUrl: parametro do Google Fonts no formato "Family+Name:wght@..." (ex: "Playfair+Display:ital,wght@0,400..700;1,400..700" ou "DM+Sans:wght@300..700"). Essa string sera concatenada em "https://fonts.googleapis.com/css2?family=" + valor + "&display=swap"
+- A primeira fonte sera aplicada como --font-display (cabecalhos, momentos monumentais)
+- A segunda fonte sera aplicada como --font-body (texto, labels, cards, todo o resto)
+- Se o cliente tiver tipografia ja consolidada, mantenha-a. Se nao, sugira combinacoes coerentes com a marca.
 
 REGRA PARA CHECKLIST:
 - pendingQuestions: APENAS perguntas reais nao respondidas

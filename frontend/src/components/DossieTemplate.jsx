@@ -1,5 +1,25 @@
 import './DossieTemplate.css';
 
+// Carrega fontes do cliente dinamicamente. React 19 hoisting — <link> vai pro <head> automaticamente.
+function DossieFonts({ typography }) {
+  const display = typography?.[0]?.googleFontsUrl || 'Fraunces:ital,opsz,wght@0,9..144,200..700;1,9..144,200..700';
+  const body = typography?.[1]?.googleFontsUrl || 'Inter:wght@300;400;500;600;700';
+  const url = `https://fonts.googleapis.com/css2?family=${display}&family=${body}&display=swap`;
+  return (
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link rel="stylesheet" href={url} />
+    </>
+  );
+}
+
+function buildFontStack(family, isSerif) {
+  if (!family) return null;
+  const fallback = isSerif ? 'Georgia, serif' : 'system-ui, sans-serif';
+  return `'${family}', ${fallback}`;
+}
+
 // Algoritmo WCAG: calcula luminance e retorna branco ou preto pra contraste
 function getContrastText(hex) {
   if (!hex || typeof hex !== 'string') return '#FFFFFF';
@@ -35,6 +55,12 @@ export default function DossieTemplate({ data, clientName: fbName, designerName:
   const neutral = colors.neutral || data.palette?.[2]?.hex || '#1A2B3C';
   const accent = colors.accent || data.palette?.[3]?.hex || '#F5F3EE';
 
+  // Fontes do cliente (com fallback para Fraunces/Inter)
+  const displayFontStack = buildFontStack(data.typography?.[0]?.family, data.typography?.[0]?.isSerif !== false)
+    || "'Fraunces', Georgia, serif";
+  const bodyFontStack = buildFontStack(data.typography?.[1]?.family, data.typography?.[1]?.isSerif === true)
+    || "'Inter', system-ui, sans-serif";
+
   const styleVars = {
     '--c-primary': primary,
     '--c-secondary': secondary,
@@ -44,6 +70,8 @@ export default function DossieTemplate({ data, clientName: fbName, designerName:
     '--c-secondary-text': getContrastText(secondary),
     '--c-neutral-text': getContrastText(neutral),
     '--c-accent-text': getContrastText(accent),
+    '--font-display': displayFontStack,
+    '--font-body': bodyFontStack,
   };
 
   const clientName = data.clientName || fbName || 'Cliente';
@@ -53,6 +81,7 @@ export default function DossieTemplate({ data, clientName: fbName, designerName:
 
   return (
     <div id="dossie-content" className="dossie-template" style={styleVars}>
+      <DossieFonts typography={data.typography} />
 
       {/* COVER */}
       <section className="dt-cover">
@@ -226,7 +255,7 @@ export default function DossieTemplate({ data, clientName: fbName, designerName:
                 <div className="dt-specimen-mark">{i === 0 ? 'Display · Headline' : 'Body · UI'}</div>
                 <div
                   className="dt-specimen-display"
-                  style={{ fontFamily: `'${t.family}', ${t.isSerif ? 'serif' : 'sans-serif'}` }}
+                  style={{ fontFamily: `'${t.family}', ${t.isSerif ? 'Georgia, serif' : 'system-ui, sans-serif'}` }}
                   dangerouslySetInnerHTML={{ __html: t.display }}
                 />
                 <div className="dt-specimen-meta">

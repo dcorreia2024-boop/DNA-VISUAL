@@ -1,9 +1,13 @@
 /* ═══════════════════════════════════════════════
    DOSSIE TEMPLATE — BRAND BOOK PREMIUM v3
+   Sistema tipografico: 2 familias, 5 papeis
+   Display Serif (cliente OU Fraunces) — 5 lugares apenas
+   Sans Body (cliente OU Inter) — todo o resto
+   Mono (JetBrains) — apenas valores tecnicos (HEX)
    ═══════════════════════════════════════════════ */
 
 .dossie-template {
-  /* CSS variables que vem inline do React */
+  /* CSS variables preenchidas via inline style do React */
   --c-primary: #2C5F9E;
   --c-secondary: #6BB04C;
   --c-neutral: #1A2B3C;
@@ -13,7 +17,12 @@
   --c-neutral-text: #FFFFFF;
   --c-accent-text: #1A1A1A;
 
-  /* Sistema editorial */
+  /* FONTES — preenchidas dinamicamente pela tipografia do cliente */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+  /* Sistema editorial de cores */
   --bg: #FAFAF7;
   --bg-2: #F2EFE7;
   --bg-3: #E8E3D5;
@@ -24,18 +33,32 @@
   --rule: rgba(15,15,15,0.08);
   --rule-2: rgba(15,15,15,0.16);
 
-  /* Tipografia fluida */
-  --display: clamp(64px, 10vw, 140px);
-  --mega: clamp(44px, 6.5vw, 84px);
-  --title: clamp(32px, 4vw, 56px);
-  --subtitle: clamp(22px, 2.2vw, 32px);
-  --lead: clamp(17px, 1.4vw, 21px);
-  --body: 15px;
-  --small: 13px;
-  --cap: 11px;
-  --mark: 10px;
+  /* ESCALA TIPOGRAFICA — 5 papeis */
+  --type-display: clamp(56px, 9vw, 120px);
+  --type-display-md: clamp(44px, 6.5vw, 84px);
+  --type-heading: clamp(20px, 2.2vw, 28px);
+  --type-lead: clamp(17px, 1.4vw, 21px);
+  --type-body: 15px;
+  --type-small: 13px;
+  --type-label: 11px;
+  --type-mark: 10px;
 
-  /* Espaçamento */
+  /* TRACKING DOS LABELS — substitui o "ar de mono" */
+  --label-tracking: 0.2em;
+  --label-tracking-tight: 0.15em;
+
+  /* Aliases legacy (compat com codigo existente) */
+  --display: var(--type-display);
+  --mega: var(--type-display-md);
+  --title: clamp(32px, 4vw, 56px);
+  --subtitle: var(--type-heading);
+  --lead: var(--type-lead);
+  --body: var(--type-body);
+  --small: var(--type-small);
+  --cap: var(--type-label);
+  --mark: var(--type-mark);
+
+  /* Espacamento */
   --xs: 8px;
   --sm: 16px;
   --md: 32px;
@@ -43,10 +66,9 @@
   --xl: 88px;
   --2xl: 128px;
   --3xl: 176px;
-
   --pad-x: clamp(24px, 6vw, 96px);
 
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: var(--font-body);
   background: var(--bg);
   color: var(--ink);
   line-height: 1.6;
@@ -57,6 +79,12 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Espaco sutil entre roman e italic — fix bug "paraguiar" */
+.dossie-template em {
+  margin: 0 0.05em;
+  font-style: italic;
 }
 
 /* ═══════ COVER ═══════ */
@@ -102,10 +130,27 @@
   border-bottom: 1px solid currentColor;
   opacity: 0.65;
 }
-.dt-masthead-l { display: flex; flex-direction: column; gap: 6px; font: 500 10px/1 'JetBrains Mono', monospace; letter-spacing: 2px; text-transform: uppercase; }
+.dt-masthead-l {
+  display: flex; flex-direction: column; gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+}
 .dt-masthead-edition { opacity: 0.7; }
 .dt-masthead-issue { opacity: 0.45; }
-.dt-masthead-r { font: 400 var(--cap)/1.5 'Fraunces', serif; font-style: italic; text-align: right; opacity: 0.7; max-width: 240px; }
+.dt-masthead-r {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-style: italic;
+  font-size: var(--type-label);
+  line-height: 1.5;
+  text-align: right;
+  opacity: 0.7;
+  max-width: 240px;
+}
 
 .dt-cover-main {
   position: relative; z-index: 2;
@@ -114,8 +159,11 @@
   padding: var(--xl) 0;
 }
 .dt-cover-eyebrow {
-  font: 500 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 6px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
   opacity: 0.5;
   margin-bottom: var(--lg);
@@ -127,27 +175,28 @@
   background: currentColor;
   opacity: 0.6;
 }
+
+/* DISPLAY 1/5 — nome do cliente na capa */
 .dt-cover-name {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-weight: 300;
-  font-size: var(--display);
-  line-height: 0.88;
-  letter-spacing: -0.045em;
+  font-size: var(--type-display);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
   margin-bottom: var(--lg);
   word-break: break-word;
   hyphens: auto;
   max-width: 14ch;
 }
-.dt-cover-name em { font-style: italic; font-weight: 200; opacity: 0.78; }
+.dt-cover-name em { font-weight: 200; opacity: 0.78; }
+
 .dt-cover-tagline {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
+  font-family: var(--font-body);
   font-weight: 300;
-  font-size: var(--subtitle);
-  line-height: 1.4;
-  max-width: 38ch;
+  font-size: var(--type-lead);
+  line-height: 1.5;
+  max-width: 42ch;
   opacity: 0.85;
-  letter-spacing: -0.005em;
 }
 
 .dt-cover-footer {
@@ -160,10 +209,23 @@
   opacity: 0.85;
 }
 .dt-meta-block { display: flex; flex-direction: column; gap: 6px; }
-.dt-meta-label { font: 500 var(--mark)/1 'JetBrains Mono', monospace; letter-spacing: 2.5px; text-transform: uppercase; opacity: 0.5; }
-.dt-meta-value { font: 400 var(--small)/1.4 'Inter', sans-serif; }
+.dt-meta-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+.dt-meta-value {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-small);
+  line-height: 1.4;
+}
 
-/* ═══════ ÍNDICE ═══════ */
+/* ═══════ INDICE ═══════ */
 .dt-index {
   background: var(--bg-2);
   padding: var(--2xl) var(--pad-x);
@@ -179,22 +241,24 @@
   border-bottom: 1px solid var(--rule-2);
 }
 .dt-index-mark {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-style: italic;
-  font-weight: 200;
+  font-weight: 300;
   font-size: 80px;
-  line-height: 0.75;
+  line-height: 0.85;
   color: var(--c-primary);
   letter-spacing: -0.03em;
 }
+
+/* DISPLAY 2/5 — titulo do sumario */
 .dt-index-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-weight: 300;
-  font-size: var(--mega);
-  line-height: 0.94;
+  font-size: var(--type-display-md);
+  line-height: 1;
   letter-spacing: -0.025em;
 }
-.dt-index-title em { font-style: italic; font-weight: 400; }
+.dt-index-title em { font-weight: 400; }
 
 .dt-index-grid {
   display: grid;
@@ -214,7 +278,7 @@
 .dt-index-item:hover .dt-index-num { color: var(--c-primary); }
 .dt-index-item:hover .dt-index-arrow { transform: translateX(4px); color: var(--c-primary); }
 .dt-index-num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
   font-size: 32px;
@@ -222,19 +286,25 @@
   transition: color 0.3s;
 }
 .dt-index-text {
-  font: 500 var(--body)/1.3 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-body);
+  line-height: 1.3;
   letter-spacing: -0.01em;
 }
 .dt-index-pages {
-  font: 500 var(--cap)/1 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-label);
+  line-height: 1;
   color: var(--ink-3);
-  letter-spacing: 1.5px;
+  letter-spacing: var(--label-tracking-tight);
+  text-transform: uppercase;
 }
 .dt-index-arrow {
   color: var(--ink-4);
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-size: 20px;
+  font-family: var(--font-body);
+  font-size: 18px;
   transition: all 0.3s;
 }
 
@@ -270,44 +340,49 @@
   margin-bottom: var(--xs);
 }
 .dt-ch-num {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-style: italic;
   font-weight: 200;
   font-size: clamp(48px, 6vw, 80px);
-  line-height: 0.75;
+  line-height: 0.95;
   color: var(--c-primary);
   letter-spacing: -0.04em;
+  display: inline-block;
 }
 .dt-chapter-ink .dt-ch-num { color: var(--c-secondary); }
-.dt-ch-num em { font-style: italic; font-weight: 300; }
+.dt-ch-num em { font-weight: 300; }
 
 .dt-ch-overline {
-  font: 500 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 3.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--c-primary);
   padding-bottom: 8px;
 }
 .dt-chapter-ink .dt-ch-overline { color: var(--c-secondary); }
 
+/* DISPLAY 3/5 — titulo do capitulo */
 .dt-ch-title {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-weight: 300;
-  font-size: var(--mega);
-  line-height: 0.94;
+  font-size: var(--type-display-md);
+  line-height: 0.96;
   letter-spacing: -0.025em;
   max-width: 14ch;
   word-break: break-word;
   hyphens: auto;
 }
-.dt-ch-title em { font-style: italic; font-weight: 400; }
+.dt-ch-title em { font-weight: 400; }
 
+/* Intro de capitulo — agora SANS Lead, sem italic */
 .dt-ch-intro {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-body);
   font-weight: 300;
-  font-style: italic;
-  font-size: var(--subtitle);
-  line-height: 1.45;
+  font-size: var(--type-lead);
+  line-height: 1.55;
   max-width: 56ch;
   color: var(--ink-2);
   margin-bottom: var(--xl);
@@ -317,7 +392,7 @@
 
 .dt-ch-content { display: flex; flex-direction: column; gap: var(--xl); }
 
-/* ═══════ PULLQUOTE ═══════ */
+/* ═══════ PULLQUOTE — DISPLAY 4/5 ═══════ */
 .dt-pullquote {
   position: relative;
   padding: var(--lg) 0 var(--lg) var(--xl);
@@ -335,7 +410,7 @@
   content: '"';
   position: absolute;
   left: -8px; top: -32px;
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
   font-size: 120px;
@@ -345,7 +420,7 @@
   pointer-events: none;
 }
 .dt-pullquote-text {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
   font-size: var(--title);
@@ -356,8 +431,11 @@
 /* ═══════ BLOCK LABEL ═══════ */
 .dt-block-label {
   display: flex; align-items: center; gap: var(--sm);
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 3.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: 0.25em;
   color: var(--c-primary);
   text-transform: uppercase;
   margin-bottom: var(--md);
@@ -370,8 +448,11 @@
   flex-shrink: 0;
 }
 .dt-label-aside {
-  font: 400 var(--cap)/1 'Fraunces', serif;
+  font-family: var(--font-body);
+  font-weight: 400;
   font-style: italic;
+  font-size: var(--type-label);
+  line-height: 1;
   color: var(--ink-3);
   letter-spacing: 0;
   text-transform: none;
@@ -379,9 +460,9 @@
 }
 
 .dt-lead {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-body);
   font-weight: 300;
-  font-size: var(--lead);
+  font-size: var(--type-lead);
   line-height: 1.55;
   letter-spacing: -0.005em;
   color: var(--ink);
@@ -390,7 +471,7 @@
 .dt-lead strong { font-weight: 600; color: var(--c-primary); }
 .dt-chapter-ink .dt-lead { color: rgba(255, 255, 255, 0.85); }
 
-/* ═══════ CARDS ═══════ */
+/* ═══════ CARDS — Heading sans medium ═══════ */
 .dt-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
@@ -411,7 +492,7 @@
 .dt-card-roman {
   position: absolute;
   top: var(--md); right: var(--md);
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-body);
   font-style: italic;
   font-weight: 300;
   font-size: 18px;
@@ -419,30 +500,36 @@
   letter-spacing: -0.02em;
 }
 .dt-card-eyebrow {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   color: var(--c-primary);
   text-transform: uppercase;
   margin-bottom: var(--xs);
 }
 .dt-card-title {
-  font-family: 'Fraunces', serif;
-  font-weight: 400;
-  font-size: var(--subtitle);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-heading);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
   margin-bottom: var(--xs);
   word-break: break-word;
   overflow-wrap: break-word;
 }
-.dt-card-title em { font-style: italic; font-weight: 300; }
+.dt-card-title em { font-style: italic; font-weight: 400; }
 .dt-card-text {
-  font: 400 var(--body)/1.65 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-body);
+  line-height: 1.65;
   color: var(--ink-2);
   flex: 1;
 }
 
-/* ═══════ PERSONALITY ═══════ */
+/* ═══════ PERSONALITY — Heading sans bold ═══════ */
 .dt-personality {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
@@ -476,18 +563,21 @@
 .dt-pers-cell:nth-child(3) { background: var(--c-secondary); color: var(--c-secondary-text); }
 .dt-pers-cell:nth-child(n+4) { background: var(--bg-2); color: var(--ink); }
 .dt-pers-word {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
-  font-size: clamp(32px, 4.5vw, 56px);
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   word-break: break-word;
   hyphens: auto;
   max-width: 100%;
 }
-.dt-pers-word em { font-style: italic; font-weight: 200; }
+.dt-pers-word em { font-style: italic; font-weight: 400; }
 .dt-pers-meaning {
-  font: 400 var(--small)/1.5 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-small);
+  line-height: 1.5;
   font-style: italic;
   opacity: 0.85;
   max-width: 26ch;
@@ -496,7 +586,10 @@
 /* ═══════ TAGS ═══════ */
 .dt-tag-row { display: flex; flex-wrap: wrap; gap: var(--xs); }
 .dt-tag {
-  font: 500 var(--small)/1 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-small);
+  line-height: 1;
   padding: 9px 14px;
   background: transparent;
   border: 1px solid var(--rule-2);
@@ -540,24 +633,30 @@
   min-width: 0;
 }
 .dt-swatch-name {
-  font-family: 'Fraunces', serif;
-  font-weight: 400;
-  font-size: clamp(20px, 2.2vw, 28px);
-  line-height: 1.05;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: clamp(20px, 2.2vw, 26px);
+  line-height: 1.1;
   margin-bottom: var(--xs);
   letter-spacing: -0.015em;
   word-break: break-word;
 }
-.dt-swatch-name em { font-style: italic; font-weight: 300; }
+.dt-swatch-name em { font-style: italic; font-weight: 400; }
 .dt-swatch-hex {
-  font: 500 var(--cap)/1 'JetBrains Mono', monospace;
-  letter-spacing: 1.5px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--type-label);
+  line-height: 1;
+  letter-spacing: 0.05em;
   opacity: 0.7;
   margin-bottom: var(--sm);
 }
 .dt-swatch-role {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   text-transform: uppercase;
   opacity: 0.55;
 }
@@ -573,7 +672,10 @@
 }
 .dt-swatch:hover .dt-swatch-meta { transform: translateY(0); }
 .dt-swatch-usage {
-  font: 400 var(--small)/1.55 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-small);
+  line-height: 1.55;
   opacity: 0.9;
 }
 
@@ -584,17 +686,16 @@
   gap: var(--sm);
   padding: var(--md) 0;
 }
-.dt-ratio-bar {
-  display: flex;
-  height: 6px;
-  overflow: hidden;
-}
+.dt-ratio-bar { display: flex; height: 6px; overflow: hidden; }
 .dt-ratio-segment { height: 100%; }
 .dt-ratio-legend { display: flex; flex-wrap: wrap; gap: var(--md); }
 .dt-ratio-legend-item {
   display: flex; align-items: center; gap: var(--xs);
-  font: 500 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 1.5px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   color: var(--ink-2);
   text-transform: uppercase;
 }
@@ -612,18 +713,24 @@
 }
 .dt-specimen + .dt-specimen { margin-top: var(--sm); }
 .dt-specimen-mark {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   color: var(--ink-3);
   text-transform: uppercase;
 }
 .dt-specimen-display {
-  font-size: clamp(48px, 8vw, 104px);
+  /* font-family inline via inline style — usa a fonte que esta sendo demonstrada */
+  font-size: clamp(40px, 7vw, 88px);
   font-weight: 400;
-  line-height: 1;
-  letter-spacing: -0.03em;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
   color: var(--ink);
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
   max-width: 100%;
 }
 .dt-specimen-display em { font-style: italic; font-weight: 300; }
@@ -635,8 +742,22 @@
   border-top: 1px solid var(--rule);
 }
 .dt-spec-item { display: flex; flex-direction: column; gap: 6px; }
-.dt-spec-label { font: 500 var(--mark)/1 'JetBrains Mono', monospace; letter-spacing: 2.5px; color: var(--ink-3); text-transform: uppercase; }
-.dt-spec-value { font: 500 var(--small)/1.4 'Inter', sans-serif; color: var(--ink); }
+.dt-spec-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.dt-spec-value {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-small);
+  line-height: 1.4;
+  color: var(--ink);
+}
 
 /* ═══════ COPY ON/OFF ═══════ */
 .dt-copy-frame {
@@ -654,8 +775,7 @@
 .dt-copy-mark {
   width: 28px; height: 28px;
   display: grid; place-items: center;
-  font-family: 'Fraunces', serif;
-  font-style: italic;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 16px;
   flex-shrink: 0;
@@ -663,17 +783,20 @@
 .dt-copy-mark-on { background: rgba(46, 204, 113, 0.1); color: rgb(39, 174, 96); }
 .dt-copy-mark-off { background: rgba(231, 76, 60, 0.1); color: rgb(192, 57, 43); }
 .dt-copy-side-t {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   text-transform: uppercase;
   color: var(--ink-3);
 }
 .dt-copy-list { display: flex; flex-direction: column; gap: 8px; }
 .dt-copy-item {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-body);
   font-style: italic;
   font-weight: 400;
-  font-size: var(--lead);
+  font-size: var(--type-lead);
   line-height: 1.5;
   padding: var(--md);
   background: var(--bg);
@@ -683,7 +806,7 @@
 .dt-copy-on { border-color: rgb(39, 174, 96); color: var(--ink); }
 .dt-copy-off { border-color: rgb(192, 57, 43); color: var(--ink-2); }
 
-/* ═══════ COMPETITORS ═══════ */
+/* ═══════ COMPETITORS — Heading sans medium ═══════ */
 .dt-competitor {
   border: 1px solid var(--rule);
   background: var(--bg);
@@ -702,21 +825,27 @@
 }
 .dt-competitor-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .dt-competitor-name {
-  font-family: 'Fraunces', serif;
-  font-weight: 400;
-  font-size: var(--subtitle);
-  line-height: 1.1;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-heading);
+  line-height: 1.15;
   letter-spacing: -0.015em;
   word-break: break-word;
 }
 .dt-competitor-tag {
-  font: 400 var(--cap)/1.4 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-label);
+  line-height: 1.4;
   font-style: italic;
   opacity: 0.65;
 }
 .dt-competitor-badge {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   padding: 6px 12px;
   border: 1px solid currentColor;
   opacity: 0.75;
@@ -735,14 +864,20 @@
   min-width: 0;
 }
 .dt-competitor-cell-l {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   color: var(--c-primary);
   text-transform: uppercase;
   margin-bottom: var(--sm);
 }
 .dt-competitor-cell-t {
-  font: 400 var(--body)/1.6 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-body);
+  line-height: 1.6;
   color: var(--ink);
   word-break: break-word;
 }
@@ -768,7 +903,7 @@
 .dt-asset-icon {
   width: 26px; height: 26px;
   display: grid; place-items: center;
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 13px;
   flex-shrink: 0;
@@ -779,20 +914,29 @@
 .dt-asset-icon-low { background: rgba(149, 165, 166, 0.12); color: rgb(127, 140, 141); }
 .dt-asset-content { min-width: 0; }
 .dt-asset-name {
-  font: 500 var(--body)/1.3 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-body);
+  line-height: 1.3;
   color: var(--ink);
   margin-bottom: 4px;
   word-break: break-word;
 }
 .dt-asset-detail {
-  font: 400 var(--small)/1.5 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-small);
+  line-height: 1.5;
   font-style: italic;
   color: var(--ink-2);
   word-break: break-word;
 }
 .dt-asset-tag {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   padding: 6px 10px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -802,7 +946,7 @@
 .dt-asset-tag-mid { background: rgba(243, 156, 18, 0.1); color: rgb(211, 130, 19); }
 .dt-asset-tag-low { background: rgba(149, 165, 166, 0.1); color: rgb(127, 140, 141); }
 
-/* ═══════ HISTORY (DARK) ═══════ */
+/* ═══════ HISTORY (DARK) — Heading sans medium ═══════ */
 .dt-history-frame {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
@@ -823,22 +967,28 @@
 .dt-history-success { border-color: rgb(46, 204, 113); }
 .dt-history-fail { border-color: rgb(231, 76, 60); }
 .dt-history-l {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 3.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   color: rgb(46, 204, 113);
 }
 .dt-history-fail .dt-history-l { color: rgb(231, 76, 60); }
 .dt-history-what {
-  font-family: 'Fraunces', serif;
-  font-weight: 400;
-  font-size: var(--subtitle);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-heading);
   line-height: 1.3;
   word-break: break-word;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 .dt-history-why {
-  font: 400 var(--body)/1.6 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-body);
+  line-height: 1.6;
   font-style: italic;
   opacity: 0.72;
   word-break: break-word;
@@ -860,17 +1010,25 @@
 }
 .dt-callout-warn .dt-callout-l { color: rgb(211, 130, 19); }
 .dt-callout-l {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 3.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: 0.25em;
   color: var(--c-secondary);
   text-transform: uppercase;
   margin-bottom: var(--xs);
 }
 .dt-chapter:not(.dt-chapter-ink) .dt-callout-l { color: var(--c-primary); }
 .dt-callout-warn .dt-callout-l { color: rgb(211, 130, 19); }
-.dt-callout-t { font: 400 var(--body)/1.65 'Inter', sans-serif; }
+.dt-callout-t {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-body);
+  line-height: 1.65;
+}
 
-/* ═══════ DELIVERIES ═══════ */
+/* ═══════ DELIVERIES — Heading sans medium ═══════ */
 .dt-delivery {
   background: var(--bg);
   border: 1px solid var(--rule);
@@ -888,14 +1046,20 @@
   border-bottom: 1px solid var(--rule);
 }
 .dt-delivery-type {
-  font: 600 var(--small)/1 'Inter', sans-serif;
-  letter-spacing: 0.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-small);
+  line-height: 1;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink);
 }
 .dt-delivery-prio {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   color: var(--c-primary);
   text-transform: uppercase;
 }
@@ -907,14 +1071,20 @@
 }
 .dt-delivery-cell { background: var(--bg); padding: var(--md); min-width: 0; }
 .dt-delivery-cell-l {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 2.5px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: var(--label-tracking-tight);
   color: var(--ink-3);
   text-transform: uppercase;
   margin-bottom: var(--xs);
 }
 .dt-delivery-cell-t {
-  font: 400 var(--small)/1.6 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-small);
+  line-height: 1.6;
   color: var(--ink);
   word-break: break-word;
 }
@@ -940,11 +1110,14 @@
   margin-top: 3px;
 }
 .dt-check-text {
-  font: 400 var(--body)/1.5 'Inter', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--type-body);
+  line-height: 1.5;
   word-break: break-word;
 }
 
-/* ═══════ FINAL SUMMARY ═══════ */
+/* ═══════ FINAL SUMMARY — DISPLAY 5/5 ═══════ */
 .dt-final {
   background: var(--c-neutral);
   color: var(--c-neutral-text);
@@ -964,19 +1137,22 @@
 }
 .dt-final-content {
   position: relative; z-index: 1;
-  text-align: center;
-  max-width: 760px;
+  text-align: left;
+  max-width: 720px;
   margin: 0 auto;
 }
 .dt-final-mark {
-  font: 600 var(--mark)/1 'JetBrains Mono', monospace;
-  letter-spacing: 4px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--type-mark);
+  line-height: 1;
+  letter-spacing: 0.3em;
   color: var(--c-secondary);
   text-transform: uppercase;
   margin-bottom: var(--md);
 }
 .dt-final-quote-mark {
-  font-family: 'Fraunces', serif;
+  font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
   font-size: 80px;
@@ -985,12 +1161,12 @@
   margin-bottom: var(--sm);
 }
 .dt-final-text {
-  font-family: 'Fraunces', serif;
-  font-weight: 200;
+  font-family: var(--font-display);
+  font-weight: 300;
   font-style: italic;
-  font-size: var(--title);
-  line-height: 1.4;
-  letter-spacing: -0.015em;
+  font-size: clamp(28px, 3.5vw, 48px);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 
 /* ═══════ FOOTER ═══════ */
@@ -1005,8 +1181,11 @@
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 .dt-footer-block {
-  font: 500 var(--mark)/1.4 'JetBrains Mono', monospace;
-  letter-spacing: 2px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--type-mark);
+  line-height: 1.4;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 .dt-footer-block:last-child { text-align: right; }
