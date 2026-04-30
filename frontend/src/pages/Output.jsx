@@ -204,6 +204,22 @@ export default function Output() {
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    // MODO DEMO: usa dossie pre-gerado, pula fetch
+    if (sessionStorage.getItem('dna_demo_mode') === '1') {
+      try {
+        const demoData = JSON.parse(sessionStorage.getItem('dna_demo_dossier') || 'null');
+        if (demoData) {
+          setDossie(demoData);
+          setDossieFormat('json');
+          setApiMode(true);
+          setLoading(false);
+          // Limpa o flag pra nao persistir em proxima navegacao manual
+          sessionStorage.removeItem('dna_demo_mode');
+        }
+      } catch (e) { /* fallback pro fluxo normal */ }
+      return;
+    }
+
     let cancelled = false;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 180000);

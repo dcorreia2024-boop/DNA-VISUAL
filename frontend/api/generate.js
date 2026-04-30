@@ -216,42 +216,66 @@ function formatFormDataForAI(formData) {
   return text;
 }
 
+// FALLBACK CHAIN: tenta o modelo principal, se falhar tenta os proximos
+const MODEL_CHAIN = [
+  process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free',
+  'google/gemma-4-31b-it:free',
+  'openai/gpt-oss-120b:free',
+];
+
 async function callOpenRouter(userContent, systemPrompt) {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  const model = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free';
   const baseUrl = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1/chat/completions';
 
   if (!apiKey) throw new Error('OPENROUTER_API_KEY nao configurada');
 
-  const response = await fetch(baseUrl, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://dna-visual-three.vercel.app',
-      'X-Title': 'DNA Visual - V4 Ruston & Co.'
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent }
-      ],
-      temperature: 0.5,
-      max_tokens: 10000
-    })
-  });
+  let lastError = null;
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(`OpenRouter ${response.status}: ${err.error?.message || response.statusText}`);
+  for (const model of MODEL_CHAIN) {
+    try {
+      console.log(`[DNA] Tentando modelo: ${model}`);
+
+      const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://dna-visual-three.vercel.app',
+          'X-Title': 'DNA Visual - V4 Ruston & Co.'
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userContent }
+          ],
+          temperature: 0.5,
+          max_tokens: 10000
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText.slice(0, 200)}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.choices?.[0]?.message?.content) {
+        throw new Error('Resposta vazia do modelo');
+      }
+
+      console.log(`[DNA] Sucesso com modelo: ${model}`);
+      return data.choices[0].message.content;
+
+    } catch (err) {
+      console.warn(`[DNA] Modelo ${model} falhou: ${err.message}`);
+      lastError = err;
+      // Continua pro proximo modelo
+    }
   }
 
-  const data = await response.json();
-  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-    throw new Error('Resposta invalida do OpenRouter');
-  }
-  return data.choices[0].message.content;
+  throw new Error(`Todos os modelos falharam. Ultimo erro: ${lastError?.message}`);
 }
 
 function parseDossierJson(raw) {

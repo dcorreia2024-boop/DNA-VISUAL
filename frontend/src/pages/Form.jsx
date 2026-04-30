@@ -4,6 +4,7 @@ import { useForm } from '../context/FormContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAutoResize } from '../hooks/useAutoResize';
 import SECTIONS from '../data/sections';
+import { DEMO_DOSSIER } from '../data/demoData';
 import './Form.css';
 
 export default function Form() {
@@ -88,6 +89,13 @@ export default function Form() {
     }
 
     navigate('/output');
+  };
+
+  // Modo demo: carrega dossie pre-gerado e navega pro Output sem chamar API
+  const handleDemo = () => {
+    sessionStorage.setItem('dna_demo_mode', '1');
+    sessionStorage.setItem('dna_demo_dossier', JSON.stringify(DEMO_DOSSIER));
+    navigate('/output', { state: { fromDemo: true } });
   };
 
   const handleInput = (key, value, el) => {
@@ -333,9 +341,28 @@ export default function Form() {
       </div>
 
       <div className="ffoot">
-        <button className="btn btn-r" onClick={handleGenerate}>
-          GERAR DOSSI&Ecirc; DE IDENTIDADE VISUAL
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%' }}>
+          <button className="btn btn-r" onClick={handleGenerate} style={{ width: '100%' }}>
+            GERAR DOSSI&Ecirc; DE IDENTIDADE VISUAL
+          </button>
+          <button
+            onClick={handleDemo}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-muted, #888)',
+              fontSize: 11,
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              opacity: 0.6,
+              padding: 4,
+              fontFamily: 'inherit',
+              letterSpacing: 0.3
+            }}
+          >
+            Carregar exemplo (demo) &rarr;
+          </button>
+        </div>
       </div>
     </div>
   );
