@@ -46,8 +46,7 @@
   font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .dt-dossier *, .dt-dossier *::before, .dt-dossier *::after {
@@ -58,7 +57,7 @@
 
 /* ═══════════ LAYOUT BASE ═══════════ */
 .dt-chapter {
-  padding: 140px 90px;
+  padding: 140px clamp(40px, 6vw, 120px);
   position: relative;
   overflow: hidden;
   break-inside: avoid;
@@ -123,7 +122,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 32px 90px 0;
+  padding: 32px clamp(40px, 6vw, 120px) 0;
   font-family: var(--f-text);
   font-size: 11px;
   letter-spacing: 0.1em;
@@ -1100,7 +1099,7 @@
 
 /* ═══════════ SÍNTESE FINAL (BLACKOUT) ═══════════ */
 .dt-synthesis {
-  padding: 140px 90px;
+  padding: 140px clamp(40px, 6vw, 120px);
   background: var(--c-dark);
   color: var(--paper);
   position: relative;
